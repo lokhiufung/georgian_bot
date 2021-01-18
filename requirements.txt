@@ -1,0 +1,30 @@
+# server packages
+# Flask
+# Flask-RESTful
+# Flask-Cors
+
+# deep learning pakages
+# nemo_toolkit[all]==0.11.0
+# nemo_toolkit[all]==1.0.0b2
+sentence-transformers
+# transformers==3.0.2
+# finetune
+# pytorch-lightning
+
+# others
+Cython
+numpy
+pandas
+xlrd
+elasticsearch>=7.0.0,<8.0.0
+opencc
+tqdm
+annoy
+redis
+ruamel.yaml
+
+# dev
+googletrans
+pycantonese
+# jieba
+# six
