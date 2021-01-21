@@ -1,4 +1,5 @@
 import torch
+from hydra.utils import instantiate
 import nemo.collections.tts as nemo_tts
 from nemo.collections.tts.helpers.helpers import get_mask_from_lengths, tacotron2_log_to_tb_func
 from nemo.collections.common import typecheck
@@ -18,6 +19,11 @@ class ConditionalTacotron2(nemo_tts.models.Tacotron2Model):
     Tacotron2 Model that can generate spectrogram conditioning on speaker embeddings.
     Simply concatenate the speaker embedding to the embedding produced by the encoder 
     """
+    def __init__(self, cfg, trainer=None):
+        super().__init__(cfg, trainer)
+        self.spk_encoder = instantiate(self._cfg.spk_encoder)
+        self.spk_encoder.eval()  # freeze the spk_encoder. This model should be well trained 
+
     @property
     def input_types(self):
         if self.training:
@@ -37,19 +43,21 @@ class ConditionalTacotron2(nemo_tts.models.Tacotron2Model):
             }
 
     @typecheck
-    def forward(self, *, speaker_embedding, tokens, token_len, audio=None, audio_len=None):
-        if audio is not None and audio_len is not None:
-            spec_target, spec_target_len = self.audio_to_melspec_precessor(audio, audio_len)
+    def forward(self, *, tokens, token_len, audio=None, audio_len=None):
+        # if audio is not None and audio_len is not None:
+        spec_target, spec_target_len = self.audio_to_melspec_precessor(audio, audio_len)
         token_embedding = self.text_embedding(tokens).transpose(1, 2)
         encoder_embedding = self.encoder(token_embedding=token_embedding, token_len=token_len)
-        
+        with torch.no_grad():
+            spk_embedding = self.spk_encoder(spec_target)
+
         if self.training:
             spec_pred_dec, gate_pred, alignments = self.decoder(
-                memory=torch.cat((encoder_embedding, speaker_embedding), dim=1), decoder_inputs=spec_target, memory_lengths=token_len
+                memory=torch.cat((encoder_embedding, spk_embedding), dim=1), decoder_inputs=spec_target, memory_lengths=token_len
             )
         else:
             spec_pred_dec, gate_pred, alignments, pred_length = self.decoder(
-                memory=torch.cat((encoder_embedding, speaker_embedding), dim=1), memory_lengths=token_len
+                memory=torch.cat((encoder_embedding, spk_embedding), dim=1), memory_lengths=token_len
             )
         spec_pred_postnet = self.postnet(mel_spec=spec_pred_dec)
 
@@ -59,12 +67,12 @@ class ConditionalTacotron2(nemo_tts.models.Tacotron2Model):
 
     @typecheck(
         input_types={
-            "seapkers_embedding": NeuralType(('B', 'C'), EncodedRepresentation()),
+            "spk_embedding": NeuralType(('B', 'C'), EncodedRepresentation()),
             "tokens": NeuralType(('B', 'T'), EmbeddedTextType())
         },
         output_types={"spec": NeuralType(('B', 'D', 'T'), MelSpectrogramType())},
     )
-    def generate_spectrogram(self, *, speaker_embedding, tokens):
+    def generate_spectrogram(self, *, audio, tokens):
         self.eval()
         self.calculate_loss = False
         token_len = torch.tensor([len(i) for i in tokens]).to(self.device)
