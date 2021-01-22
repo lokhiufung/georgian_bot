@@ -1,7 +1,7 @@
 import torch
 from hydra.utils import instantiate
 import nemo.collections.tts as nemo_tts
-from nemo.collections.tts.helpers.helpers import get_mask_from_lengths, tacotron2_log_to_tb_func
+from nemo.collections.tts.helpers.helpers import get_mask_from_lengths
 from nemo.collections.common import typecheck
 from nemo.core.neural_types.elements import (
     EncodedRepresentation,
@@ -28,7 +28,6 @@ class ConditionalTacotron2(nemo_tts.models.Tacotron2Model):
     def input_types(self):
         if self.training:
             return {
-                "seapkers_embedding": NeuralType(('B', 'C'), EncodedRepresentation()),
                 "tokens": NeuralType(('B', 'T'), EmbeddedTextType()),
                 "token_len": NeuralType(('B'), LengthsType()),
                 "audio": NeuralType(('B', 'T'), AudioSignal()),
@@ -45,10 +44,12 @@ class ConditionalTacotron2(nemo_tts.models.Tacotron2Model):
     @typecheck
     def forward(self, *, tokens, token_len, audio=None, audio_len=None):
         # if audio is not None and audio_len is not None:
+        # audio and audio_len must not be None at any time
         spec_target, spec_target_len = self.audio_to_melspec_precessor(audio, audio_len)
         token_embedding = self.text_embedding(tokens).transpose(1, 2)
         encoder_embedding = self.encoder(token_embedding=token_embedding, token_len=token_len)
         with torch.no_grad():
+            # get speaker embedding
             spk_embedding = self.spk_encoder(spec_target)
 
         if self.training:
@@ -67,16 +68,17 @@ class ConditionalTacotron2(nemo_tts.models.Tacotron2Model):
 
     @typecheck(
         input_types={
-            "spk_embedding": NeuralType(('B', 'C'), EncodedRepresentation()),
+            "audio": NeuralType(('B', 'T'), AudioSignal()),
             "tokens": NeuralType(('B', 'T'), EmbeddedTextType())
         },
         output_types={"spec": NeuralType(('B', 'D', 'T'), MelSpectrogramType())},
     )
-    def generate_spectrogram(self, *, audio, tokens):
+    def generate_spectrogram(self, *, tokens, audio):
         self.eval()
         self.calculate_loss = False
         token_len = torch.tensor([len(i) for i in tokens]).to(self.device)
-        tensors = self(speaker_embedding=speaker_embedding, tokens=tokens, token_len=token_len)
+        audio_len = torch.tensor([len(i) for i in audio]).to(self.device)
+        tensors = self(tokens=tokens, token_len=token_len, audio=audio, audio_len=audio_len)
         spectrogram_pred = tensors[1]
 
         if spectrogram_pred.shape[0] > 1:
