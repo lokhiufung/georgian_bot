@@ -52,13 +52,22 @@ class ConditionalTacotron2(nemo_tts.models.Tacotron2Model):
             # get speaker embedding
             spk_embedding = self.spk_encoder(spec_target)
 
+        # if self.training:
+        #     spec_pred_dec, gate_pred, alignments = self.decoder(
+        #         memory=torch.cat((encoder_embedding, spk_embedding), dim=1), decoder_inputs=spec_target, memory_lengths=token_len
+        #     )
+        # else:
+        #     spec_pred_dec, gate_pred, alignments, pred_length = self.decoder(
+        #         memory=torch.cat((encoder_embedding, spk_embedding), dim=1), memory_lengths=token_len
+        #     )
+        # 1. use sum instead of concatenation: in order to preserve the dimension 512 dim of embeddings
         if self.training:
             spec_pred_dec, gate_pred, alignments = self.decoder(
-                memory=torch.cat((encoder_embedding, spk_embedding), dim=1), decoder_inputs=spec_target, memory_lengths=token_len
+                memory=encoder_embedding + spk_embedding, decoder_inputs=spec_target, memory_lengths=token_len
             )
         else:
             spec_pred_dec, gate_pred, alignments, pred_length = self.decoder(
-                memory=torch.cat((encoder_embedding, spk_embedding), dim=1), memory_lengths=token_len
+                memory=encoder_embedding + spk_embedding, memory_lengths=token_len
             )
         spec_pred_postnet = self.postnet(mel_spec=spec_pred_dec)
 
