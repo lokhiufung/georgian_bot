@@ -42,7 +42,7 @@ class ConditionalTacotron2(nemo_tts.models.Tacotron2Model):
                 "audio_len": NeuralType(('B'), LengthsType(), optional=True),
             }
 
-    @typecheck
+    @typecheck()
     def forward(self, *, tokens, token_len, audio=None, audio_len=None):
         # if audio is not None and audio_len is not None:
         # audio and audio_len must not be None at any time
@@ -54,7 +54,7 @@ class ConditionalTacotron2(nemo_tts.models.Tacotron2Model):
         
         with torch.no_grad():
             # get speaker embedding
-            _, spk_embedding = self.spk_encoder(spec_target)
+            _, spk_embedding = self.spk_encoder.forward(input_signal=audio, input_signal_length=audio_len)
             spk_embedding = spk_embedding.unsqueeze(1).expand(-1, encoder_embedding.size()[1], -1)  # expand spk_embedding (B, D) -> (B, T, D) 
 
         # if self.training:
