@@ -59,11 +59,11 @@ class ConditionalTacotron2(nemo_tts.models.Tacotron2Model):
 
         # if self.training:
         #     spec_pred_dec, gate_pred, alignments = self.decoder(
-        #         memory=torch.cat((encoder_embedding, spk_embedding), dim=1), decoder_inputs=spec_target, memory_lengths=token_len
+        #         memory=torch.cat((encoder_embedding, spk_embedding), dim=2), decoder_inputs=spec_target, memory_lengths=token_len
         #     )
         # else:
         #     spec_pred_dec, gate_pred, alignments, pred_length = self.decoder(
-        #         memory=torch.cat((encoder_embedding, spk_embedding), dim=1), memory_lengths=token_len
+        #         memory=torch.cat((encoder_embedding, spk_embedding), dim=2), memory_lengths=token_len
         #     )
         # 1. use sum instead of concatenation: in order to preserve the dimension 512 dim of embeddings
         if self.training:
