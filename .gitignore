@@ -132,3 +132,4 @@ dmypy.json
 test.py
 .vscode/
 dev_utils/
+.hydra/
