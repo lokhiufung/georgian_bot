@@ -17,7 +17,7 @@ class DialogHistory(object):
         return len(self.dialogs)
         
     def add_dialog(self, text_input, is_bot=False):
-        tag = self.bot_tag if not is_bot else self.client_tag 
+        tag = self.bot_tag if is_bot else self.client_tag 
         self.dialogs.append(self.output_type(tag, text_input))
 
     def get_dialog(self, n: int = 1, include_bot: bool = False, include_tag: bool = False) -> list:
