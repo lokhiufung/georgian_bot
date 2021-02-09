@@ -21,7 +21,7 @@ def get_parser():
     parser.add_argument('--dataset_name', type=str, required=True, help='dataset_name')
     parser.add_argument('--version_name', type=str, required=True, help='dataset_name')
     parser.add_argument('--books', type=str, required=False, help='e.g comma-seperated str of books: ozma_of_oz,rinkitink_in_oz,sky_island,the_master_key')
-    parser.add_argument('--gender', type=str, required=False, help='gender of spk')
+    parser.add_argument('--gender', choices=['female', 'male'], type=str, required=False, help='gender of spk')
     parser.add_argument('--spk', type=str, required=False, help='name of spk')
     parser.add_argument('--p', type=float, default=0.99, required=False, help='proportion of training data')
     parser.add_argument('--resample', action='store_true', required=False, help='whether to resample wav file')
@@ -93,9 +93,9 @@ class MaiLabDataset(object):
                 speakers.append(
                     Speaker(name=speaker_name, gender=gender, books=books)
                 )
-                print(speakers[-1].name)
-                print(speakers[-1].gender)
-                print(speakers[-1].books)
+                # print(speakers[-1].name)
+                # print(speakers[-1].gender)
+                # print(speakers[-1].books)
         return speakers
 
     @staticmethod
@@ -111,8 +111,22 @@ class MaiLabDataset(object):
         """
         meta_df = []
         # not_found_wav_filenames = []
-        for speaker in filter(lambda x: x.name in speaker_names if speaker_names else True, self.speakers): 
-            for book in filter(lambda x: x in books if books else True, speaker.books):
+        speakers = self.speakers.copy()
+        # filter speakers: UGLY
+        if speaker_names:
+            print('filter by speaker_names: {}'.format(speaker_names))
+            speakers = [speaker for speaker in self.speakers if (speaker.name in speaker_names)]
+            print('filtered speakers: {}'.format(speakers))
+        if gender:
+            print('filter by gender: {}'.format(gender))
+            speakers = [speaker for speaker in speakers if (speaker.gender == gender)]
+            print('filtered speakers: {}'.format([speaker.name for speaker in speakers]))
+        for speaker in speakers:
+            # filter books
+            selected_books = speaker.books.copy()
+            if books:
+                selected_books = [book for book in speaker.books if book in books]
+            for book in selected_books:
                 metadata_filepath = os.path.join(self.dataset_root, 'by_book/{}/{}/{}/metadata.csv'.format(speaker.gender, speaker.name, book))
                 df = pd.read_csv(metadata_filepath, header=None, sep='|', names=self.metadata_schema)
                 wav_filepaths = []
@@ -144,7 +158,7 @@ def main():
     dataset_name = args.dataset_name
     version_name = args.version_name
     books = args.books.splits(',') if args.books else args.books
-    spk = args.spk
+    spk = args.spk.split(',') if args.spk else args.spk
     gender = args.gender
     p = args.p
     resample = args.resample
@@ -156,7 +170,7 @@ def main():
     
     # 1. aggregate datasets to a dataframe
     dataset = MaiLabDataset(data_root, dataset_name)
-    meta_df = dataset.aggregate_metadata(spk, gender, books)
+    meta_df = dataset.aggregate_metadata(spk, books, gender)
     
     print('total_duration: ', meta_df['duration'].sum() / 3600.0)
     
