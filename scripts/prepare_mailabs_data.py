@@ -19,7 +19,7 @@ def get_parser():
     parser = argparse.ArgumentParser('Prepare dataset for training TTS english with M-AILabs')
     parser.add_argument('--data_root', type=str, required=True, help='directory of source data')
     parser.add_argument('--dataset_name', type=str, required=True, help='dataset_name')
-    parser.add_argument('--version_name', type=str, required=True, help='dataset_name')
+    parser.add_argument('--version_name', type=str, required=True, help='version_name')
     parser.add_argument('--books', type=str, required=False, help='e.g comma-seperated str of books: ozma_of_oz,rinkitink_in_oz,sky_island,the_master_key')
     parser.add_argument('--gender', choices=['female', 'male'], type=str, required=False, help='gender of spk')
     parser.add_argument('--spk', type=str, required=False, help='name of spk')
