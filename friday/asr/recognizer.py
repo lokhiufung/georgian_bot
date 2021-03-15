@@ -5,8 +5,6 @@ from typing import List
 import numpy as np
 import nemo.collections.asr as nemo_asr
 
-from assist.interface import Interface
-
 
 __all__ = ['Recognizer']
 
@@ -26,7 +24,7 @@ def _manifests_to_paths(manifests: List[str]) -> List[str]:
     return audio_filepaths
 
 
-class Recognizer(Interface):
+class Recognizer:
     def __init__(self, asr_model, device='cpu', use_lm=False, lm_path=''):
         self.model = nemo_asr.models.EncDecCTCModel.restore_from(restore_path=asr_model)
 

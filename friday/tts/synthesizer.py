@@ -1,16 +1,8 @@
-# import time
-
-# import numpy as np
-# import nemo
-# import nemo.collections.asr as nemo_asr
 import torch
 import nemo.collections.tts as nemo_tts
 
-# # from assist.utils import get_logger
-from assist.interface import Interface
 
-
-class Synthesizer(Interface):
+class Synthesizer:
     def __init__(self, text2mel_model, mel2audio_model, device='cpu'):
         self.text2mel_model = nemo_tts.models.Tacotron2Model.restore_from(text2mel_model)
         self.mel2audio_model = nemo_tts.models.WaveGlowModel.restore_from(mel2audio_model)
