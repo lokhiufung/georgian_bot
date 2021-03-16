@@ -1,7 +1,7 @@
 import collections
 
 
-class DialogHistory(object):
+class SimpleDialogHistory(object):
     OUTPUT_TYPE = collections.namedtuple(
         'DialogEntity',
         ['tag', 'text']

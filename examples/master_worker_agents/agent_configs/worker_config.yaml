@@ -1,0 +1,19 @@
+name: worker
+is_voice: true
+use_redis: false
+
+dl_endpoint:
+  asr: ''
+  tts: ''
+  nlp_faq: ''
+
+worker_endpoint:
+  emsd: ''
+
+state_storage:
+  state_dict:
+    current_domain: null
+
+dialog_history:
+  capacity: 10
+
