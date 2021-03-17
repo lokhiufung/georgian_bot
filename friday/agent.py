@@ -35,17 +35,23 @@ class CompositionalAgent(object):
                 if dl_server.lower() not in dl_endpoint.keys():
                     raise ValueError('Invalid dl_endpoint: {}'.format(dl_enpoint))
             
-    def request(self, endpoint, data, method, callback=None):
+    def request(self, endpoint: str, data: dict, method: str, callback=None):
         response = self._sess.request(method, endpoint, data=data)
 
         if callback:
             response = callback(response)
         return response
 
-    def handle_asr_response(self, response):
-        raise NotImplementedError('handle_asr_response is required for is_voice=True')
+    def handle_asr_response(self, response: requests.Response):
+        """
+        return:
+            payload: dict
+            {"transcript": str, "time": float}
+        """
+        payload = response.json()
+        return payload
 
-    def handle_tts_response(self, response):
+    def handle_tts_response(self, response: requests.Response):
         raise NotImplementedError('handle_tts_response is required for is_voice=True')
 
     def dialog_flow(self):

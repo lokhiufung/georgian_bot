@@ -12,6 +12,7 @@ worker_endpoint:
 
 state_storage:
   current_domain: null
+  keyterm_pool: []
 
 dialog_history:
   capacity: 10
