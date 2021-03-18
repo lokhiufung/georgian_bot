@@ -6,6 +6,7 @@ import time
 import string
 import random
 import librosa
+import soundfile
 
 from flask import Flask, abort, request
 import scipy.io.wavfile as wave
@@ -16,11 +17,11 @@ from friday.asr.recognizer import Recognizer
 __all__ = ['create_asr_server']
 
 
-def create_asr_server(asr_cfg, server_cfg):
-    recognizer = Recognizer(**asr_cfg)
+def create_asr_server(asr_server_cfg):
+    recognizer = Recognizer(**asr_server_cfg.recognizer)
 
-    CONSTANTS = cfg.server_cfg.constants  # constants, nb channels, sample rate 
-    app = Flask(name=server_cfg.name)
+    CONSTANTS = asr_server_cfg.server.constants  # constants, nb channels, sample rate 
+    app = Flask(asr_server_cfg.server.name)
 
     @app.route('/transcribe', methods=['POST'])
     def transcribe_file():
@@ -29,7 +30,7 @@ def create_asr_server(asr_cfg, server_cfg):
         payload = {}  # initialize a payload object for response
         payload['request_id'] = get_request_id()
         body = request.get_json()
-        payload['client_id'] = body['client_id']
+        payload['client_id'] = body.get('client_id', '')
         # LOGGER.debug('id: {}'.format(payload['request_id']))
         # LOGGER.debug('client_id: {}'.format(payload['client_id']))
 
@@ -38,7 +39,7 @@ def create_asr_server(asr_cfg, server_cfg):
         except Exception as err:
             abort(500, 'decode error err: {}'.format(err)) 
         lang = body['lang'].upper()
-        if audio_file_checker(f, sample_rate=CONSTANTS['SAMPLE_RATE'], num_channels=CONSTANTS['NB_CHANNELS']):
+        if audio_file_checker(f, sample_rate=CONSTANTS['sample_rate'], num_channels=CONSTANTS['nb_channels']):
             audio_temp = tempfile.NamedTemporaryFile(suffix='.wav')
             manifest_temp = tempfile.NamedTemporaryFile(suffix='.json')
 
@@ -46,7 +47,7 @@ def create_asr_server(asr_cfg, server_cfg):
                 f_bytes.write(f.read())
 
             # temp: trim silence
-            trim_silence(audio_temp.name, sr=CONSTANTS['SAMPLE_RATE'])
+            trim_silence(audio_temp.name, sr=CONSTANTS['sample_rate'])
             # 1. stream-in audio
             #### TO BE IMPLEMENTED
 
@@ -60,7 +61,7 @@ def create_asr_server(asr_cfg, server_cfg):
 
             start_t = time.time()
             try:
-                transcription = recognizer.wav_to_text(manifest=manifest_temp.name)  # list with single transcription string
+                transcription = recognizer.wav_to_text(manifests=manifest_temp.name)  # list with single transcription string
             except Exception as err:
                 abort(500, err)
             total_t = time.time() - start_t
@@ -69,12 +70,12 @@ def create_asr_server(asr_cfg, server_cfg):
             manifest_temp.close()
             
             payload['time'] = total_t
-            payload['transcription'] = transcription
+            payload['transcription'] = transcription[0] # wav_to_text return a list of transcriptions
             
             # LOGGER.debug('Successful payload: {}'.format(payload))
             return payload
         else:
-            abort(400, 'sample rate and number of channels should be {}Hz and {}'.format(CONSTANTS['SAMPLE_RATE'], CONSTANTS['NB_CHANNELS']))
+            abort(400, 'sample rate and number of channels should be {}Hz and {}'.format(CONSTANTS['sample_rate'], CONSTANTS['nb_channels']))
 
     return app
     
@@ -103,5 +104,4 @@ def get_request_id():
 def trim_silence(audio_filename, sr=16000, top_db=30):
     sample, sr = librosa.load(audio_filename, sr=sr)
     sample, _ = librosa.effects.trim(sample, top_db=top_db)
-    librosa.output.write_wav(audio_filename, sample, sr)
-
+    soundfile.write(audio_filename, sample, sr)

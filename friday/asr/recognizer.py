@@ -2,6 +2,7 @@ import os
 import json
 from typing import List
 
+import torch
 import numpy as np
 import nemo.collections.asr as nemo_asr
 
@@ -26,7 +27,7 @@ def _manifests_to_paths(manifests: List[str]) -> List[str]:
 
 class Recognizer:
     def __init__(self, asr_model, device='cpu', use_lm=False, lm_path=''):
-        self.model = nemo_asr.models.EncDecCTCModel.restore_from(restore_path=asr_model)
+        self.model = nemo_asr.models.EncDecCTCModel.restore_from(restore_path=asr_model, map_location=torch.device(device))
 
         # self.model.setup_test_data(
         #     test_data_config={

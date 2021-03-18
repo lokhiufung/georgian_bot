@@ -4,8 +4,8 @@ import nemo.collections.tts as nemo_tts
 
 class Synthesizer:
     def __init__(self, text2mel_model, mel2audio_model, device='cpu'):
-        self.text2mel_model = nemo_tts.models.Tacotron2Model.restore_from(text2mel_model)
-        self.mel2audio_model = nemo_tts.models.WaveGlowModel.restore_from(mel2audio_model)
+        self.text2mel_model = nemo_tts.models.Tacotron2Model.restore_from(text2mel_model, map_location=torch.device(device))
+        self.mel2audio_model = nemo_tts.models.WaveGlowModel.restore_from(mel2audio_model, map_location=torch.device(device))
 
     def preprocess_text(self, text):
         # TODO: should be detached from flask server

@@ -1,0 +1,11 @@
+
+recognizer:
+  asr_model: ''
+  use_lm: false
+
+server:
+  name: &name friday-asr-server
+
+  constants:
+    sample_rate: 16000
+    nb_channels: 1

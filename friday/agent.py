@@ -5,6 +5,8 @@ from omegaconf import DictConfig
 # from hydra.utils import instantiate
 import requests
 
+from friday.response.server_response import *
+
 
 class CompositionalAgent(object):
     """Base class: An agent that is built from compositional blocks: asr, tts, nlp_qa, ...etc"""
@@ -35,7 +37,10 @@ class CompositionalAgent(object):
                 if dl_server.lower() not in dl_endpoint.keys():
                     raise ValueError('Invalid dl_endpoint: {}'.format(dl_enpoint))
             
-    def request(self, endpoint: str, data: dict, method: str, callback=None):
+    def request(self, endpoint: str, data: dict, method: str='POST', callback=None) -> FridayServerResponse:
+        """
+        request for response from friday servers
+        """
         response = self._sess.request(method, endpoint, data=data)
 
         if callback:
@@ -46,18 +51,35 @@ class CompositionalAgent(object):
         """
         return:
             payload: dict
-            {"transcript": str, "time": float}
+            {"transcription": str, **}
         """
         payload = response.json()
-        return payload
+        return ASRServerResponse(**payload)
 
     def handle_tts_response(self, response: requests.Response):
-        raise NotImplementedError('handle_tts_response is required for is_voice=True')
+        payload = response.json()
+        """
+        return:
+            payload: dict
+            {"audio": str, **}
+        """
+        return TTSServerResponse(**payload)
+
+    def handle_nlp_qa_response(self, response: requests.Response):
+        """
+        return:
+            payload: dict
+            {"answers": [{"answer", ...},], "max_scroe": float, "size": int**}
+        """
+        payload = response.json()
+        return NLPQAResponse(**payload)
+
+    def dialog_history_flow(self, text):
+        """control input text with state objects"""
+        return text
 
     def dialog_flow(self):
-        raise NotImplementedError
-
-    def dialog_history_flow(self):
+        """aggregate the results from other friday servers and task servers and return the AgentResponse"""
         raise NotImplementedError
 
 

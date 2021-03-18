@@ -13,7 +13,7 @@ class WorkerAgent(CompositionalAgent):
         # use faq as its core
         retrieved = self.request(
             endpoint=self.dl_endpoints['nlp_faq'],
-            data={'text': text}
+            data={'text': text},
             callback=self.handle_nlp_embedding_response,
         )
 

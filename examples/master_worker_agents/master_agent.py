@@ -3,11 +3,13 @@ import copy
 from friday.agent import CompositionalAgent
 from friday.decorators import ensure_register_task
 from friday.common.graph import KeyTermGraph
+from friday.response.agent_response import AgentResponse
 
 
 class MasterAgent(CompositionalAgent):
     def __init__(self, cfg):
         super().__init__(cfg)
+        self.worker_endpoints = cfg.worker_endpoints
         self.threshold = cfg.threshold
         self.keyterm_graph = KeyTermGraph(**cfg.keyterm_graph)
 
@@ -22,7 +24,7 @@ class MasterAgent(CompositionalAgent):
         # consider the dialog_history
         input_text = self.dialog_history_flow(transcript)
         # use faq as its core
-        retrieved = self.request(
+        faq_response = self.request(
             endpoint=self.dl_endpoints['nlp_faq'],
             data={'transcript': transcript},
             callback=self.handle_nlp_embedding_response,
@@ -31,7 +33,10 @@ class MasterAgent(CompositionalAgent):
         if doc['action'] == 'switch_domain' and doc['score'] > self.threshold:
             task_response = self.task.execute(command=doc['command'])
         elif self.state_storage.get('current_domain') is not None:
-            worker_response = self.send_to_worker(input_text)
+            worker_response = self.request(
+                endpoint=self.worker_endpoints[self.state_storage['current_domain']],
+                data={'text': text},
+            )
         else:
             if retrieved['score'] > self.threshold:
                 task_response = self.task.execute(command=doc['command'])
@@ -49,11 +54,6 @@ class MasterAgent(CompositionalAgent):
             callback=self.handle_tts_response,
         )
         return voice_reponse
-
-    def handle_nlp_faq_response(self, response):
-        data = response.json
-        retrieved = {'score': data['score'], **data['doc']}
-        return retrieved
 
     def dialog_history_flow(self, text):
         tokens = self.tokenizer.text_to_tokens(text)
@@ -74,9 +74,7 @@ class MasterAgent(CompositionalAgent):
             text = ' '.join([keyterm_string, text])
         return text
 
-
-
-            
-         
+    def dialog_flow(self, ) -> AgentResponse:
+        pass
         
         
