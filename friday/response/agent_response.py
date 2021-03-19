@@ -9,9 +9,9 @@ from .task_response import BaseTaskResponse
 class AgentResponse:
     input_text: str
     is_fallout: bool
-    is_voice: bool
     has_task: bool
     text_answer: str
+    is_voice: Optional[bool]=False
     voice_answer: Optional[bytes]=None
     task_response: Optional[BaseTaskResponse]=None
 

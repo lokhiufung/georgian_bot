@@ -12,7 +12,7 @@ class FridayServerResponse:
 
 
 @dataclass
-class AgentServerResponse(FridayServerResponse, AgentResponse):
+class AgentServerResponse(AgentResponse, FridayServerResponse):
     """response from other agent through server"""
 
 
@@ -34,4 +34,12 @@ class NLPQAServerResponse(FridayServerResponse):
     answers: List[Dict]
     max_score: float
     size: int
+
+
+# @dataclass
+# class NLPFAQServerResponse(FridayServerResponse):
+#     """"""
+#     answers: List[Dict]
+#     max_score: float
+#     size: int
 

@@ -10,9 +10,7 @@ dl_endpoint:
 worker_endpoint:
   emsd: ''
 
-state_storage:
-  state_dict:
-    current_domain: null
+state_storage: null
 
 dialog_history:
   capacity: 10

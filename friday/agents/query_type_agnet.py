@@ -6,7 +6,7 @@ from friday.common.dialog_history import DialogHistory
 # from assist.helpers.nlp.text_encoders import SentenceEncoder
 # from assist.adaptors.similarity_adaptor import SimilarityAdapter
 
-
+@DeprecationWarning
 class Assist(CompositionalAgent):
     def __init__(self, module_config):
         self.threshold = module_config['threshold']

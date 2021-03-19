@@ -15,14 +15,14 @@ class CompositionalAgent(object):
         self.validate_dl_endpoint(cfg.dl_endpoint)
 
         if cfg.use_redis:
-            from friday.common.state import RedisStateStorage
+            from friday.common.state import RedisClientStateStorage
 
             self.state_storage = RedisStateStorage(**cfg.state_storage)
         else:
-            from friday.common.state import SimpleStateStorage
-            from friday.common.dialog_history import InMemoryDialogHistory
+            from friday.common.state import SimpleClientStateStorage
+            from friday.common.dialog_history import SimpleDialogHistory
 
-            self.state_storage = SimpleStateStorage(**cfg.state_dict)
+            self.state_storage = SimpleStateStorage(cfg.state_dict)
             self.dialog_history = SimpleDialogHistory(**cfg.dialog_history)
         
         self.dl_endpoints = cfg.dl_endpoints
@@ -37,11 +37,11 @@ class CompositionalAgent(object):
                 if dl_server.lower() not in dl_endpoint.keys():
                     raise ValueError('Invalid dl_endpoint: {}'.format(dl_enpoint))
             
-    def request(self, endpoint: str, data: dict, method: str='POST', callback=None) -> FridayServerResponse:
+    def request(self, endpoint: str, json: dict, data: dict=None, method: str='POST', callback=None) -> FridayServerResponse:
         """
         request for response from friday servers
         """
-        response = self._sess.request(method, endpoint, data=data)
+        response = self._sess.request(method, endpoint, json=json, data=data)
 
         if callback:
             response = callback(response)
@@ -72,7 +72,7 @@ class CompositionalAgent(object):
             {"answers": [{"answer", ...},], "max_scroe": float, "size": int**}
         """
         payload = response.json()
-        return NLPQAResponse(**payload)
+        return NLPQAServerResponse(**payload)
 
     def dialog_history_flow(self, text):
         """control input text with state objects"""
@@ -82,4 +82,9 @@ class CompositionalAgent(object):
         """aggregate the results from other friday servers and task servers and return the AgentResponse"""
         raise NotImplementedError
 
+    def get_voice_response(self):
+        raise NotImplementedError
 
+    def get_text_response(self):
+        raise NotImplementedError
+        

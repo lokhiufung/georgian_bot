@@ -1,12 +1,18 @@
+"""
+Deprecated
+"""
+
 from friday.task import Task
 
 
+@DeprecationWarning
 class BaseAgent(object):
     """Base class of all agents"""
     def register_task(self, task: Task):
         raise NotImplementedError
 
 
+@DeprecationWarning
 class CompositionalAgent(BaseAgent):
     """Abstract class of all compositional agents, which can be broken down into separate functional components"""
     

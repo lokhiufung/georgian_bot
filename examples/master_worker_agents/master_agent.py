@@ -14,19 +14,30 @@ class MasterAgent(CompositionalAgent):
         self.keyterm_graph = KeyTermGraph(**cfg.keyterm_graph)
 
     @ensure_register_task
-    def get_voice_response(self, signal, client_id):
-        transcript = self.request(
+    def get_voice_response(self, voice_request):
+        """
+        Foward voice_request to asr server. voice_request must contain the field client_id
+        args:
+            voice_request: dict, request obtained from server
+        return:
+            voice_response: AgentResponse  
+        """
+        asr_server_response = self.request(
             endpoint=self.dl_endpoints['asr'],
-            data=data,
+            data=voice_request,
             callback=self.handle_asr_response,
         )
         
         # consider the dialog_history
-        input_text = self.dialog_history_flow(transcript)
+        input_text = self.dialog_history_flow(
+            text=asr_server_response.transcription,
+            client_id=asr_server_response.client_id,
+        )
+        
         # use faq as its core
         faq_response = self.request(
             endpoint=self.dl_endpoints['nlp_faq'],
-            data={'transcript': transcript},
+            data={'text': asr_server_response.transcription},
             callback=self.handle_nlp_embedding_response,
         )
 
@@ -55,14 +66,14 @@ class MasterAgent(CompositionalAgent):
         )
         return voice_reponse
 
-    def dialog_history_flow(self, text):
+    def dialog_history_flow(self, text, client_id):
         tokens = self.tokenizer.text_to_tokens(text)
         keyterms = self.token_filter.filter(tokens)
         
         # in case text do not contain any keyterms, don't update keyterm_pool and don't consider keyterm_pool
         if keyterms:
             # 1. update keyterm_pool by the relation of new input keyterms
-            keyterm_pool = copy.deepcopy(self.keyterm_pool)
+            keyterm_pool = copy.deepcopy(self.state_dict[client_id].keyterm_pool)  # consider different clients
             for keyterm_in_pool in keyterm_pool:
                 neighbors = self.keyterm_graph.get_neighbors_of(keyterm_in_pool)
                 if not set(neighbors).intersection(set(keyterms)):
