@@ -21,8 +21,10 @@ cfg = {
     },
     'extractive_qa': {
         'model_path': 'deepset/roberta-base-squad2',
-        'document_store_mode': 'in_memory',
-        'document_dir': '/home/{}/Desktop/test_haystack_eng'.format(os.environ['USER'])
+        'document_store_mode': 'es',
+        'es_index': 'ai-qa',
+        'device': 'cuda:0'
+        # 'document_dir': '/home/{}/Desktop/test_haystack_eng'.format(os.environ['USER'])
     }
 } 
 

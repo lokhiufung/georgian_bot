@@ -1,5 +1,6 @@
 from friday.agent import CompositionalAgent
 from friday.decorators import ensure_register_task
+from friday.response.agent_response import AgentResponse
 
 
 class WorkerAgent(CompositionalAgent):
@@ -25,14 +26,16 @@ class WorkerAgent(CompositionalAgent):
                 data={'text': text},
                 callback=self.handle_nlp_qa_response,
             )
-
-            if qa_answer['answer'] == 'no answer':
-                bot_response = {
-                    'fallout': True,
-                    'answer': 'fallout'
-                }
-            else:
-                bot_response = qa_answer
                 
-        return self.dialog_flow(task_response)
-        
+        return self.dialog_flow(text, nlp_qa_response, nlp_faq_response, task_response)
+    
+    def dialog_flow(self, input_text, nlp_qa_response, nlp_faq_response, task_response):
+        return AgentResponse(
+            input_text=input_text,
+            is_fallout=False,
+            has_task=True if task_response else False,
+            text_answer=nlp_qa_response.answer,
+            is_voice=self.is_voice,
+            voice_answer=nlp_qa_response.answer,
+            task_response=task_response,
+        )

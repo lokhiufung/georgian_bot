@@ -2,10 +2,22 @@ from haystack.reader.farm import FARMReader
 
 
 class ExtractiveQA:
-    def __init__(self, model_path: str, document_store_mode: str='es', document_dir: str=None, top_k_retriever: int=10, top_k_reader: int=5, device: str='cpu'):
+    def __init__(
+        self,
+        model_path: str,
+        document_store_mode: str='es',
+        document_dir: str=None,
+        top_k_retriever: int=10,
+        top_k_reader: int=5,
+        device: str='cpu',
+        es_index: str='document',
+        es_host: str='localhost'
+    ):
         from haystack.pipeline import ExtractiveQAPipeline
         
         self.device = device
+        self.es_index = es_index
+        self.es_host = es_host
         # retriever and reader args
         self.top_k_reader = top_k_reader
         self.top_k_retriever = top_k_retriever
@@ -21,7 +33,7 @@ class ExtractiveQA:
             from haystack.document_store.elasticsearch import ElasticsearchDocumentStore
             from haystack.retriever.sparse import ElasticsearchRetriever
 
-            self.document_store = ElasticsearchDocumentStore()
+            self.document_store = ElasticsearchDocumentStore(host=self.es_host, index=self.es_index)
             self.retriever = ElasticsearchRetriever(document_store=self.document_store)
         
         use_gpu = True if self.device == 'cuda:0' else False
@@ -66,12 +78,22 @@ class ExtractiveQA:
         )
         nested_docs = [preprocessor.process(d) for d in all_docs]
         docs = [d for x in nested_docs for d in x]
-        
         self.document_store.write_documents(docs)
 
 
 class EmbeddingQA:
-    def __init__(self, model_path, top_k_retriever: int=10, device: str='cpu'):
+    def __init__(
+        self,
+        model_path,
+        document_store_mode: str='es',
+        top_k_retriever: int=10,
+        device: str='cpu',
+        es_index: str='str',
+        es_host: str='localhost',
+        embedding_dim: int=768,
+        embedding_field: str='question_emb',
+        model_format: str='farm'
+    ):
         """
         A virtual assistant with question and answering type as backend of natural language understanding and inference.
         Use Haystack as nlu backend 
@@ -79,28 +101,53 @@ class EmbeddingQA:
         from haystack.pipeline import FAQPipeline
         
         self.device = device
-        
-        if cfg.document_store_mode == 'es':
+        self.es_host = es_host
+        self.es_index = es_index
+        self.embedding_dim = embedding_dim 
+        self.embedding_field = embedding_field
+
+        if document_store_mode == 'es':
             from haystack.document_store.elasticsearch import ElasticsearchDocumentStore
             from haystack.retriever.dense import EmbeddingRetriever
 
-            self.document_store = ElasticsearchDocumentStore(**cfg.haystack.document_store)
+            self.document_store = ElasticsearchDocumentStore(
+                host=self.es_host,
+                index=self.es_index,
+                embedding_dim=self.embedding_dim,
+                embedding_field=self.embedding_field,
+                excluded_meta_data=[self.embedding_field]
+            )
             self.retriever = EmbeddingRetriever(
                 document_store=self.document_store,
                 embedding_model=model_path,
-                use_gpu=True if self.device == 'cuda:0' else False
+                use_gpu=True if self.device == 'cuda:0' else False,
+                model_format=mdoel_format,
             )
         else:
-            raise ValueError(f'Only "es" is supported currently: {cfg.document_store_mode}')
+            raise ValueError(f'Only "es" is supported currently: {document_store_mode}')
         
         self.pipe = FAQPipeline(retriever=self.retriever) 
         
-        self.top_k_retriever = self.top_k_retriever
+        self.top_k_retriever = top_k_retriever
     
     def retrieve_top_k(self, text, k=1):
-        predictions = self.pipe.run(
+        prediction = self.pipe.run(
             query=text,
-            top_k_retriever=self.top_k_retriever
+            top_k_retriever=self.top_k_retriever,
         )
-        retrieved = predictions['answers'][:k]  # temp
-        return retrieved
+        retrieved = prediction['answers'][:k]  # top k answers
+        answers = []
+        # formatting on the retrieved docs
+        for doc in retrieved: 
+            answer = {}
+            answer['answer'] = doc['answer']
+            answer['context'] = doc['context']
+            answer['document_id'] = doc['document_id']
+            answer['action'] = doc['meta']['action']
+            answer['intent'] = doc['meta']['intent']
+            answer['number'] = doc['meta']['number']
+            answer['score'] = doc['score']
+            answer['probability'] = doc['probability']
+            answers.append(answer)     
+        return answers
+    

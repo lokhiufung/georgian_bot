@@ -133,4 +133,4 @@ test.py
 .vscode/
 dev_utils/
 .hydra/
-mlrun/
+mlruns/
