@@ -1,3 +1,4 @@
+import sys
 from omegaconf import DictConfig
 
 from friday_server.telegram_agent import create_telegram_bot_agent_server
@@ -19,13 +20,16 @@ agent_cfg = {
 
 server_cfg = {
     'name': 'nlp_qa_agent-server',
+    'default_answers': {
+        'welcome_message': 'Ask me any questions in deep learning!'
+    },
     'telegram': {
-        'token': ''
+        'token': sys.argv[1]
     }
 }
 
 agent = QAAgent(cfg=DictConfig(agent_cfg))
 
-app = create_telegram_bot_agent_server(server_cfg, agent)
+app = create_telegram_bot_agent_server(DictConfig(server_cfg), agent)
 
-app.run()
+app.run(port=3000)
