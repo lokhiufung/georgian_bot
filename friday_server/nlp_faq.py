@@ -25,7 +25,7 @@ def create_nlp_faq_server(faq_server_cfg):
             'client_id': client_id,
             'time': end - start,
             'answers': answers,
-            'max_score': max([answer['score'] for answer in answers]),
+            'max_score': max([answer['score'] for answer in answers]) if len(answers) > 0 else 0.0,
             'size': len(answers), 
         }
         return payload

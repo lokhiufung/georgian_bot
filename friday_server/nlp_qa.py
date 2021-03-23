@@ -24,7 +24,7 @@ def create_nlp_qa_server(qa_server_cfg: DictConfig):
             'client_id': client_id,
             'time': end - start,
             'answers': answers,
-            'max_score': max([answer['score'] for answer in answers]),
+            'max_score': max([answer['score'] for answer in answers]) if len(answers) > 0 else 0.0,
             'size': len(answers), 
         }
         return payload
