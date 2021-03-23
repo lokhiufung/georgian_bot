@@ -2,7 +2,7 @@ from typing import Union, Optional
 
 from dataclasses import dataclass
 
-from .task_response import BaseTaskRespons
+from .task_response import TaskResponse
 
 
 @dataclass
@@ -13,6 +13,6 @@ class AgentResponse:
     text_answer: str
     is_voice: Optional[bool]=False
     voice_answer: Optional[bytes]=None
-    task_response: Optional[BaseTaskResponse]=None
+    task_response: Optional[TaskResponse]=None
     additional_response: Optional=None
 

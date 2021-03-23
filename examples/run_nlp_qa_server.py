@@ -23,7 +23,7 @@ cfg = {
         'model_path': 'deepset/roberta-base-squad2',
         'document_store_mode': 'es',
         'es_index': 'ai-qa',
-        'device': 'cuda:0'
+        'device': 'cpu'
         # 'document_dir': '/home/{}/Desktop/test_haystack_eng'.format(os.environ['USER'])
     }
 } 

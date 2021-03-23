@@ -4,10 +4,9 @@ from dataclasses import dataclass
 
 
 @dataclass
-class BaseTaskResponse:
+class TaskResponse:
     """All task reponse must be a subclass of the base class."""
-    action_name: str
-
-
-
+    task_name: str
+    task_data: Optional[dict]=None
+         
 

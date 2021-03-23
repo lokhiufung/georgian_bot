@@ -16,7 +16,7 @@ Cython
 numpy
 pandas
 xlrd
-elasticsearch>=7.0.0,<8.0.0
+# elasticsearch>=7.0.0,<8.0.0
 opencc
 tqdm
 annoy

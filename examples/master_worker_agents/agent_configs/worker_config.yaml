@@ -15,3 +15,7 @@ state_storage: null
 dialog_history:
   capacity: 10
 
+default_answers:
+  clarifying_question: ""
+  fallout_answer: ""
+  

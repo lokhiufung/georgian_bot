@@ -22,7 +22,7 @@ class CompositionalAgent(object):
             from friday.common.state import SimpleClientStateStorage
             from friday.common.dialog_history import SimpleDialogHistory
 
-            self.state_storage = SimpleStateStorage(cfg.state_dict)
+            self.state_storage = SimpleClientStateStorage()
             self.dialog_history = SimpleDialogHistory(**cfg.dialog_history)
         
         self.dl_endpoints = cfg.dl_endpoints
@@ -30,7 +30,10 @@ class CompositionalAgent(object):
 
         self.task = None  # prepare for assistant jobs
 
-        
+    def register_task_class(self, task_class):
+        """task_class: class of"""
+        self.task = task_class(agent=self)
+
     def validate_dl_endpoint(self, dl_endpoint):
         if self.is_voice:
             for dl_server in ['asr', 'tts']:
