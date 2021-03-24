@@ -92,6 +92,7 @@ class EmbeddingQA:
         es_host: str='localhost',
         embedding_dim: int=768,
         embedding_field: str='question_emb',
+        similarity: str='cosine',
         model_format: str='farm'
     ):
         """
@@ -115,13 +116,14 @@ class EmbeddingQA:
                 index=self.es_index,
                 embedding_dim=self.embedding_dim,
                 embedding_field=self.embedding_field,
-                excluded_meta_data=[self.embedding_field]
+                excluded_meta_data=[self.embedding_field],
+                similarity=similarity
             )
             self.retriever = EmbeddingRetriever(
                 document_store=self.document_store,
                 embedding_model=model_path,
                 use_gpu=True if self.device == 'cuda:0' else False,
-                model_format=mdoel_format,
+                model_format=model_format,
             )
         else:
             raise ValueError(f'Only "es" is supported currently: {document_store_mode}')
@@ -138,16 +140,16 @@ class EmbeddingQA:
         retrieved = prediction['answers'][:k]  # top k answers
         answers = []
         # formatting on the retrieved docs
-        for doc in retrieved: 
+        for doc in retrieved:
+            # print(doc) 
             answer = {}
+            answer['question'] = doc['query']
             answer['answer'] = doc['answer']
             answer['context'] = doc['context']
             answer['document_id'] = doc['document_id']
-            answer['action'] = doc['meta']['action']
-            answer['intent'] = doc['meta']['intent']
-            answer['number'] = doc['meta']['number']
             answer['score'] = doc['score']
             answer['probability'] = doc['probability']
+            answer = {**answer, **doc['meta']}
             answers.append(answer)     
         return answers
     

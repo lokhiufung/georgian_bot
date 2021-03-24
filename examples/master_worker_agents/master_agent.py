@@ -1,7 +1,7 @@
 import copy
 
 from friday.agent import CompositionalAgent
-from friday.decorators import ensure_register_task
+from friday.decorators import ensure_register_action
 from friday.common.graph import KeyTermGraph
 from friday.response.agent_response import AgentResponse
 
@@ -13,7 +13,7 @@ class MasterAgent(CompositionalAgent):
         self.threshold = cfg.threshold
         self.keyterm_graph = KeyTermGraph(**cfg.keyterm_graph)
 
-    @ensure_register_task
+    @ensure_register_action
     def get_voice_response(self, voice_request):
         """
         Foward voice_request to asr server. voice_request must contain the field client_id
@@ -42,7 +42,7 @@ class MasterAgent(CompositionalAgent):
         )
 
         if doc['action'] == 'switch_domain' and doc['score'] > self.threshold:
-            task_response = self.task.execute(command=doc['command'])
+            action_response = self.action.execute(command=doc['command'])
         elif self.state_storage.get('current_domain') is not None:
             worker_response = self.request(
                 endpoint=self.worker_endpoints[self.state_storage['current_domain']],
@@ -50,7 +50,7 @@ class MasterAgent(CompositionalAgent):
             )
         else:
             if retrieved['score'] > self.threshold:
-                task_response = self.task.execute(command=doc['command'])
+                action_response = self.action.execute(command=doc['command'])
             else:
                 bot_response = {
                     'fallout': True,

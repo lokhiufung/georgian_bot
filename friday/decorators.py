@@ -1,7 +1,7 @@
-def ensure_register_task(method):
+def ensure_register_action(method):
     def wrapper(ref, *args, **kwargs):
-        if ref.task is None:
-            raise AttributeError('Please register_task() first.')
+        if ref.action is None:
+            raise AttributeError('Please register_action() first.')
         return method(ref, *args, **kwargs)
     return wrapper
 

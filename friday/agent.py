@@ -28,11 +28,11 @@ class CompositionalAgent(object):
         self.dl_endpoints = cfg.dl_endpoints
         self._sess = requests.Session()
 
-        self.task = None  # prepare for assistant jobs
+        self.action = None  # prepare for assistant jobs
 
-    def register_task_class(self, task_class):
+    def register_action_class(self, action_class):
         """task_class: class of"""
-        self.task = task_class(agent=self)
+        self.action = action_class(agent=self)
 
     def validate_dl_endpoint(self, dl_endpoint):
         if self.is_voice:
@@ -69,6 +69,15 @@ class CompositionalAgent(object):
         return TTSServerResponse(**payload)
 
     def handle_nlp_qa_response(self, response: requests.Response):
+        """
+        return:
+            payload: dict
+            {"answers": [{"answer", ...},], "max_scroe": float, "size": int**}
+        """
+        payload = response.json()
+        return NLPQAServerResponse(**payload)
+
+    def handle_nlp_faq_response(self, response: requests.Response):
         """
         return:
             payload: dict

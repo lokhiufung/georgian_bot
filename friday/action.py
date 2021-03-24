@@ -3,10 +3,10 @@ import collections
 
 import requests
 
-from friday.response.task_response import TaskResponse
+from friday.response.action_response import ActionResponse
 
 
-__all__ = ['Task', 'MasterTask']
+__all__ = ['Action']
 
 
 def to_py_variable(text):
@@ -25,11 +25,11 @@ def to_py_variable(text):
 
 
     
-class BaseTask(object):
+class Action(object):
     """
-    API caller for executing different tasks
+    API caller for executing different actions
     """
-    # DEFAULT_TASK = '<DEFAULT>'
+    # DEFAULT_ACTION = '<DEFAULT>'
     # OUTPUT_TYPE = collections.namedtuple(
     #     'ResponseEntity',
     #     ['answer', 'action_payload']
@@ -73,8 +73,17 @@ class BaseTask(object):
         except:
             raise Exception(f'Command error: {command}')
     
+    def no_action(self, client_id):
+        """
+        Do no action just for consistency of the format of faq file
+        """
+        return ActionResponse(
+            action_name='no_action',
+            has_action_data=False
+        )
 
-# class MasterTask(Task):
+
+# class MasterAction(Action):
 #     def __init__(self):
 #         super().__init__()
 #         self.state_dict['current_domain'] = None

@@ -2,17 +2,17 @@ from typing import Union, Optional
 
 from dataclasses import dataclass
 
-from .task_response import TaskResponse
+from .action_response import ActionResponse
 
 
 @dataclass
 class AgentResponse:
     input_text: str
     is_fallout: bool
-    has_task: bool
+    has_action: bool
     text_answer: str
     is_voice: Optional[bool]=False
     voice_answer: Optional[bytes]=None
-    task_response: Optional[TaskResponse]=None
-    additional_response: Optional=None
+    action_response: Optional[ActionResponse]=None
+    additional_answers: Optional=None
 
