@@ -13,7 +13,11 @@ agent_cfg = {
     'dialog_history': {
         'capacity': 10
     },
-    'threshold': 0.1
+    'threshold': 0.6,
+    'default_answers': {
+        'fallout_answer': '對唔住我唔明你問咩',
+        'clarifying_question': '你喺咪問緊呢啲問題'
+    }
 }
 
 server_cfg = {

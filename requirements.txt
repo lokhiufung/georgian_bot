@@ -1,15 +1,15 @@
 # server packages
 # Flask
-# Flask-RESTful
-# Flask-Cors
 
 # deep learning pakages
 # nemo_toolkit[all]==0.11.0
-# nemo_toolkit[all]==1.0.0b2
-sentence-transformers
+nemo_toolkit[all]==1.0.0b2
+# sentence-transformers
 # transformers==3.0.2
 # finetune
 # pytorch-lightning
+farm-haystack
+
 
 # others
 Cython
@@ -22,6 +22,7 @@ tqdm
 annoy
 redis
 ruamel.yaml
+networkx
 
 # dev
 googletrans
