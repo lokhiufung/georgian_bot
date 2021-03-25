@@ -14,8 +14,10 @@ from friday.tts.synthesizer import Synthesizer
 
 
 def create_tts_server(tts_server_cfg):
-    app = Flask(tts_server_cfg.server.name)
+    server_cfg = tts_server_cfg.server
     
+    app = Flask(server_cfg.name)
+
     CONSTANTS = tts_server_cfg.server.constants
     tts_model = Synthesizer(**tts_server_cfg.synthesizer)
 
@@ -31,7 +33,7 @@ def create_tts_server(tts_server_cfg):
         raise ValueError('server.cfg.lang {} is not supported.')
 
     
-    @app.route('/synthesize', method=['POST'])
+    @app.route('/synthesize', methods=['POST'])
     def synthesize():
         payload = dict() 
         data = request.get_json()
@@ -53,7 +55,7 @@ def create_tts_server(tts_server_cfg):
             with open(manifest_temp.name, 'w') as f:
                 json.dump(manifest, f)
             start = time.perf_counter()
-            sample = synthesizer.text_to_wav(manifest=manifest_temp.name, denoiser_strength=denoiser_strength)
+            sample = tts_model.text_to_wav(manifest=manifest)
             # librosa: trim silence/ get the first split
             # if CONSTANTS['POST_PROCESSING']:
             #     sample = helpers.trim_silence(sample)
@@ -63,7 +65,7 @@ def create_tts_server(tts_server_cfg):
 
             manifest_temp.close()  # close and remove manifest_temp
 
-            write(audio_temp, SYNTHESIZER.sample_rate, sample)
+            write(audio_temp, CONSTANT.sample_rate, sample)
 
             # format payload
             with open(audio_temp, 'rb') as f:
@@ -76,6 +78,8 @@ def create_tts_server(tts_server_cfg):
             return jsonify(payload)
         else:
             abort(400, 'text cannot be empty')
+
+    return app
 
 
 def _random_string(string_length=8):

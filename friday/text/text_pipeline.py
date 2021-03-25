@@ -1,19 +1,19 @@
 from typing import List, Callable, Tuple
-
+from functools import partial
 
 
 class TextPipeline(object):
-    def __init__(self, callables: List[Tuple[str, Callable]]):
+    def __init__(self, callable_tuples: List[Tuple[str, Callable]]):
         """callables: List of tuples with (name, callable). Callables should preserve the input dtype, i.e str"""
-        self.callables = callables
+        self.callable_tuples = callable_tuples
 
     def __call__(self, text):
-        for callable_ in self.callables:
+        for _, callable_ in self.callable_tuples:
             text = callable_(text)
         return text
     
-    def append_step(self, callable_: Callable):
-        self.callables.append(callable_)
+    def append_step(self, callable_tuple: Tuple[str, Callable]):
+        self.callable_tuples.append(callable_tuple)
 
 
 def build_cantonese_tts_text_pipeline():
@@ -25,15 +25,15 @@ def build_cantonese_tts_text_pipeline():
     
     cleaner_tuples = []
     cleaner_tuples.append(
-        ('cantonese_cleaner', cantonese_cleaner(text))
+        ('cantonese_cleaner', cantonese_cleaner)
     )
     cleaner_tuples.append(
-        ('phonemize', normalize_to_phonemes(text, 'yue'))
+        ('phonemize', partial(normalize_to_phonemes, lang='yue'))
     )
     cleaner_tuples.append(
-        ('normalize_code_switch', normalize_hk_code_swicth(text))
+        ('normalize_code_switch', normalize_hk_code_swicth)
     )
-    return TextPipeline(callables=cleaners_tuples)
+    return TextPipeline(callable_tuples=cleaner_tuples)
 
 
 def build_english_tts_text_pipeline():
@@ -45,11 +45,11 @@ def build_english_tts_text_pipeline():
     
     cleaner_tuples = []
     cleaner_tuples.append(
-        ('english_cleaner', english_cleaner(text))
+        ('english_cleaner', english_cleaner)
     )
     cleaner_tuples.append(
-        ('phonemize', normalize_to_phonemes(text, 'en'))
+        ('phonemize', partial(normalize_to_phonemes, lang='en'))
     )
-    return TextPipeline(callables=cleaners_tuples)
+    return TextPipeline(callable_tuples=cleaner_tuples)
    
     
