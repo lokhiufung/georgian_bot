@@ -12,7 +12,7 @@ cfg = {
         'k': 5
     },
     'embedding_qa': {
-        'model_path': '/home/lokhiufung/projects/hey-assist/pretrained_models/finetune-2020-11-24_04-09-29',
+        'model_path': '/home/einstein/friday/pretrained_models/finetune-2020-11-24_04-09-29',
         'document_store_mode': 'es',
         'es_index': 'add_two_test',
         'device': 'cpu',
@@ -22,4 +22,4 @@ cfg = {
 
 app = create_nlp_faq_server(DictConfig(cfg))
 
-app.run(port=3001)
+app.run(host='0.0.0.0', port=5000)
