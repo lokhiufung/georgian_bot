@@ -28,7 +28,7 @@ def create_asr_server(asr_server_cfg):
         """
         """
         payload = {}  # initialize a payload object for response
-        payload['request_id'] = get_request_id()
+        # payload['request_id'] = get_request_id()
         body = request.get_json()
         payload['client_id'] = body.get('client_id', '')
         # LOGGER.debug('id: {}'.format(payload['request_id']))
