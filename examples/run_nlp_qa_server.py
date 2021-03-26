@@ -30,4 +30,7 @@ cfg = {
 
 app = create_nlp_qa_server(DictConfig(cfg))
 
-app.run()
+
+if __name__ == '__main__':
+    app.run()
+    

@@ -20,4 +20,6 @@ tts_server_cfg = {
 }
 app = create_tts_server(DictConfig(tts_server_cfg))
 
-app.run()
+
+if __name__ == '__main__':
+    app.run()

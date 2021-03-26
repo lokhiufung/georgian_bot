@@ -22,4 +22,9 @@ cfg = {
 
 app = create_nlp_faq_server(DictConfig(cfg))
 
+<<<<<<< HEAD
 app.run(host='0.0.0.0', port=5000)
+=======
+if __name__ == '__main__':
+    app.run(port=3001)
+>>>>>>> 8e358603562a42fdb1b152605a8522e11c723af3
