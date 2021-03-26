@@ -30,4 +30,5 @@ agent.register_action_class(WorkerAction)
 
 app = create_agent_server(DictConfig(server_cfg), agent)
 
-app.run()
+if __name__ == '__main__':
+    app.run()
