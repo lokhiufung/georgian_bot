@@ -58,6 +58,27 @@ class WorkerAgent(CompositionalAgent):
             # )
             return self.dialog_flow(text, nlp_faq_response, nlp_qa_response=None)
     
+    @ensure_register_action
+    def get_voice_response(self, voice_request):
+        client_id = voice_request.get('client_id', '')
+        
+        asr_response = self.request(
+            endpoint=self.dl_endpoints['asr'],
+            json=voice_request,
+            callback=self.handle_asr_response
+        )
+        agent_response = self.get_text_response(
+            text=asr_response.transcription,
+            client_id=client_id
+        )
+        tts_response = self.request(
+            endpoint=self.dl_endpoints['tts'],
+            json={'text': agent_response.text_answer},
+            callback=self.handle_tts_response
+        )
+        agent_response.voice_answer = tts_response.audio
+        return agent_response
+
     def dialog_flow(self, input_text, nlp_faq_response, nlp_qa_response=None, action_response=None):
         is_fallout = False
         additional_answers = None

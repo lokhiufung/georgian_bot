@@ -134,3 +134,4 @@ test.py
 dev_utils/
 .hydra/
 mlruns/
+pretrained_models/

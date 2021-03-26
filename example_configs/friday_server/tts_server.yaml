@@ -1,5 +1,5 @@
 synthesizer:
-  text2eml_model: ''
+  text2mel_model: ''
   mel2audio_model: ''
   device: "cuda:0"
 
@@ -8,3 +8,4 @@ server:
 
   constants:
     denoiser_strength: 1.0
+    sample_rate: 22050
