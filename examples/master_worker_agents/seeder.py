@@ -1,6 +1,6 @@
 import argparse
 
-from friday.utils import index_faq_documents_to_es, index_qa_documents_to_es json_to_docs
+from friday.utils import index_faq_documents_to_es, index_qa_documents_to_es, json_to_docs
 
 
 def prepare_faq(json_file, embedding_model, use_gpu):
