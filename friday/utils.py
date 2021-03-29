@@ -5,6 +5,17 @@ from haystack.retriever.dense import EmbeddingRetriever
 from haystack.document_store.elasticsearch import ElasticsearchDocumentStore
 
 
+def index_qa_documents_to_es(
+    docs: List[dict],
+    index: str,
+    host='localhost',
+):
+    document_store = ElasticsearchDocumentStore(
+        host=host,
+        index=index
+    )
+    document_store.write_documents(docs)
+    
 
 def index_faq_documents_to_es(
     docs: List[dict],
@@ -50,9 +61,9 @@ def check_faq_schema(docs):
             raise ValueError('doc must contain the following fields: {}'.format(required_fields))
 
 
-def json_to_docs(json_file):
+def json_to_docs(json_file, mode='faq'):
     with open(json_file, 'r') as f:
         docs = json.load(f)
-    
-    check_faq_schema(docs)
+    if mode.lower() == 'faq':
+        check_faq_schema(docs)
     return docs
