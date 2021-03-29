@@ -32,7 +32,6 @@ def main():
     parser.add_argument('--gpu', action='store_true', default=False, help='whether to use gpu or not')
     args = parser.parse_args()
     
-    json_file = args.json_file
     embedding_model = args.model
     use_gpu = args.gpu
     if args.faq_file:
