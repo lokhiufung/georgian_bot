@@ -16,7 +16,7 @@ def prepare_faq(json_file, embedding_model, use_gpu):
 
 
 def prepare_qa(json_file):
-    docs = json_to_docs(json_file)
+    docs = json_to_docs(json_file, mode='qa')
     index_qa_documents_to_es(
         docs,
         index='drcd_test',
