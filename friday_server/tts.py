@@ -6,11 +6,15 @@ import time
 import base64
 import random
 import string
+import os
 
 from flask import Flask, request, abort, jsonify
 from scipy.io.wavfile import write
 
 from friday.tts.synthesizer import Synthesizer
+
+# tmp
+os.environ['PHONEMIZER_ESPEAKER_PATH'] = '/usr/bin/espeak-ng'
 
 
 def create_tts_server(tts_server_cfg):
