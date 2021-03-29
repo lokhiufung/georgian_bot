@@ -55,7 +55,7 @@ def create_tts_server(tts_server_cfg):
             with open(manifest_temp.name, 'w') as f:
                 json.dump(manifest, f)
             start = time.perf_counter()
-            sample = tts_model.text_to_wav(manifest=manifest)
+            sample = tts_model.text_to_wav(manifest=manifest)[0]  # scipy.io.wav write needs a 1-d array 
             # librosa: trim silence/ get the first split
             # if CONSTANTS['POST_PROCESSING']:
             #     sample = helpers.trim_silence(sample)
@@ -64,7 +64,6 @@ def create_tts_server(tts_server_cfg):
             # LOGGER.debug('Successful time: {} manifest: {}'.format(total_t, manifest))
 
             manifest_temp.close()  # close and remove manifest_temp
-
             write(audio_temp, CONSTANTS.sample_rate, sample)
 
             # format payload
