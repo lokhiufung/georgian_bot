@@ -65,7 +65,7 @@ def create_tts_server(tts_server_cfg):
 
             manifest_temp.close()  # close and remove manifest_temp
 
-            write(audio_temp, CONSTANT.sample_rate, sample)
+            write(audio_temp, CONSTANTS.sample_rate, sample)
 
             # format payload
             with open(audio_temp, 'rb') as f:
