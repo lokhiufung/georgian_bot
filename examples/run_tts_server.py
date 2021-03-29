@@ -14,6 +14,7 @@ tts_server_cfg = {
         'name': 'tts-server',
         'lang': 'cantonese',
         'constants': {
+            'sample_rate': 22050,
             'denoiser_strength': 1.0
         }
     }
