@@ -7,7 +7,7 @@ def prepare_faq(json_file, embedding_model, use_gpu):
     docs = json_to_docs(json_file, mode='faq')
     index_faq_documents_to_es(
         docs,
-        index='add_two_test',
+        index='worker_test',
         embedding_column='question',
         embedding_model=embedding_model,
         use_gpu=use_gpu,
