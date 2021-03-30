@@ -12,7 +12,7 @@ class CompositionalAgent(object):
     """Base class: An agent that is built from compositional blocks: asr, tts, nlp_qa, ...etc"""
     def __init__(self, cfg: DictConfig):
         self.is_voice = cfg.is_voice
-        self.validate_dl_endpoint(cfg.dl_endpoint)
+        self.validate_dl_endpoint(cfg.dl_endpoints)
 
         if cfg.use_redis:
             from friday.common.state import RedisClientStateStorage

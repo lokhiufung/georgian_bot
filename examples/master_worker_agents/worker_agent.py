@@ -51,17 +51,17 @@ class WorkerAgent(CompositionalAgent):
             action_response = self.action.execute(command=nlp_faq_response.answers[0]['action'], client_id=client_id)
             return self.dialog_flow(text, nlp_faq_response, action_response=action_response)
         else:
-            # nlp_qa_response = self.request(
-            #     endpoint=self.dl_endpoints['nlp_qa'],
-            #     data={'text': text},
-            #     callback=self.handle_nlp_qa_response,
-            # )
-            return self.dialog_flow(text, nlp_faq_response, nlp_qa_response=None)
+            nlp_qa_response = self.request(
+                endpoint=self.dl_endpoints['nlp_qa'],
+                json={'text': text},
+                callback=self.handle_nlp_qa_response,
+            )
+            return self.dialog_flow(text, nlp_faq_response, nlp_qa_response=nlp_qa_response)
     
     @ensure_register_action
     def get_voice_response(self, voice_request):
         client_id = voice_request.get('client_id', '')
-        
+
         asr_response = self.request(
             endpoint=self.dl_endpoints['asr'],
             json=voice_request,
@@ -85,7 +85,8 @@ class WorkerAgent(CompositionalAgent):
         # print(nlp_faq_response.answers)
         if nlp_qa_response:
             answers = [
-                answer for answer in gap_mean_filter(nlp_qa_response.answers, n_std=1.0) if answer['score'] > self.threshold
+                answer for answer in gap_mean_filter(nlp_qa_response.answers, n_std=1.0)
+                # answer for answer in gap_mean_filter(nlp_qa_response.answers, n_std=1.0) if answer['score'] > self.threshold
             ]  # filter answers by gaps and output only the answers that have scores greater than self.threshold
             if len(answers) > 1:
                 additional_answers = answers

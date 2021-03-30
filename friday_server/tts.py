@@ -13,10 +13,23 @@ from scipy.io.wavfile import write
 
 from friday.tts.synthesizer import Synthesizer
 
+
+#########################
 # tmp
-os.environ['PHONEMIZER_ESPEAKER_PATH'] = '/usr/bin/espeak-ng'
+import librosa
+
+def trim_silence(sample, top_db=60, frame_length=2048, hop_length=512):
+    sample, _ = librosa.effects.trim(sample, top_db=top_db, frame_length=frame_length, hop_length=hop_length)
+    return sample
 
 
+def extract_segnment(sample, i=0, top_db=60, frame_length=2048, hop_length=512):
+    intervals = librosa.effects.split(sample, top_db=top_db, frame_length=frame_length, hop_length=hop_length)
+    sample = sample[intervals[i][0]:intervals[i][1]]
+    return sample
+#########################
+
+    
 def create_tts_server(tts_server_cfg):
     server_cfg = tts_server_cfg.server
     
@@ -61,9 +74,9 @@ def create_tts_server(tts_server_cfg):
             start = time.perf_counter()
             sample = tts_model.text_to_wav(manifest=manifest)[0]  # scipy.io.wav write needs a 1-d array 
             # librosa: trim silence/ get the first split
-            # if CONSTANTS['POST_PROCESSING']:
-            #     sample = helpers.trim_silence(sample)
-            #     sample = helpers.extract_segnment(sample)
+            if CONSTANTS['post_processing']:
+                sample = trim_silence(sample)
+                sample = extract_segnment(sample)
             total_t = time.perf_counter() - start
             # LOGGER.debug('Successful time: {} manifest: {}'.format(total_t, manifest))
 
@@ -77,7 +90,7 @@ def create_tts_server(tts_server_cfg):
 
             # payload = dict()
             payload['audio'] = base64.b64encode(data).decode('utf-8')
-            
+            payload['time'] = total_t
             return jsonify(payload)
         else:
             abort(400, 'text cannot be empty')

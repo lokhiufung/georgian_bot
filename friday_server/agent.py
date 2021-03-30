@@ -15,6 +15,8 @@ def create_agent_server(server_cfg, agent: CompositionalAgent):
     @app.route('/voice_bot', methods=['POST'])
     def voice_bot():
         data = request.get_json()
+        client_id = data.get('client_id', '')
+        
         start = time.perf_counter()
         response = agent.get_voice_response(
             voice_request=data
