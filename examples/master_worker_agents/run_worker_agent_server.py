@@ -7,13 +7,16 @@ from friday_server.agent import create_agent_server
 
 agent_cfg = {
     'dl_endpoints': {
-        'nlp_faq': 'http://localhost:3001/faq'
+        'asr': 'http:///transcribe',
+        'tts': 'http:///synthesize',
+        'nlp_qa': 'http:///qa',
+        'nlp_faq': 'http:///faq',
     },
-    'is_voice': False,
+    'is_voice': True,
     'dialog_history': {
         'capacity': 10
     },
-    'threshold': 0.6,
+    'threshold': 0.85,
     'default_answers': {
         'fallout_answer': '對唔住我唔明你問咩',
         'clarifying_question': '你喺咪問緊呢啲問題'
