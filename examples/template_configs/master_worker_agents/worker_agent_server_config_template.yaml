@@ -1,0 +1,15 @@
+agent_cfg:
+  dl_endpoints:
+    asr: "http://your-host:your-port/transcribe",
+    tts: "http://your-host:your-port/synthesize"
+    nlp_qa: "http://your-host:your-port/qa"
+    nlp_faq: "http://your-host:your-port/faq"
+  is_voice: true
+  dialog_history:
+    capacity: 10
+  threshold: 0.85
+  default_answers:
+    fallout_answer: "對唔住我唔明你問咩"
+    clarifying_question: "你喺咪問緊呢啲問題"
+server_cfg:
+  name: "worker_agent-server"

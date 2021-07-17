@@ -1,15 +1,33 @@
 import re
 import collections
-
+from typing import Union, Optional, List, Any
+from dataclasses import dataclass
 import requests
 
 from friday.response.action_response import ActionResponse
 
 
-__all__ = ['Action']
+__all__ = ['Action', 'ActionRequest']
 
 
-def to_py_variable(text):
+@dataclass
+class ActionRequest:
+    client_id: str
+    text: str
+    intent: Optional[str]=''
+    command: Optional[str]=''
+    nlu_data: Optional[Any]=None
+
+
+    
+def to_py_variable(text: str) -> Union[float, int, str]:
+    """infer and convert the type of input text
+
+    :param text: text
+    :type text: str
+    :return: casted variable
+    :rtype: Union[float, int, str]
+    """
     # type_ = str
     if re.match(r'^[+-]?[0-9]+\.[0-9]+$', text):
         # print(re.match(r'[0-9]?\.[0-9]?'))
@@ -26,15 +44,12 @@ def to_py_variable(text):
 
     
 class Action(object):
-    """
-    API caller for executing different actions
-    """
-    # DEFAULT_ACTION = '<DEFAULT>'
-    # OUTPUT_TYPE = collections.namedtuple(
-    #     'ResponseEntity',
-    #     ['answer', 'action_payload']
-    # )
     def __init__(self, agent):
+        """API caller for executing different actions. All action of an friday agent must be declared in Action
+
+        :param agent: agent object
+        :type agent: [type]
+        """
         self.agent = agent
         # self.output_type = self.OUTPUT_TYPE
         # self.state_dict = dict()
@@ -55,7 +70,15 @@ class Action(object):
                     args.append(to_py_variable(value))
         return args, kwargs
 
-    def execute(self, command, *additional_args, **additional_kwargs):
+    def execute(self, command: str, *additional_args, **additional_kwargs):
+        """execute command
+
+        :param command: text of function call
+        :type command: str
+        :raises Exception: command error
+        :return: action result
+        :rtype: [type]
+        """
         try:
             func = getattr(
                 self,
@@ -73,14 +96,44 @@ class Action(object):
         except:
             raise Exception(f'Command error: {command}')
     
-    def no_action(self, client_id):
-        """
-        Do no action just for consistency of the format of faq file
+    def execute_v2(self, action_request: ActionRequest):
+        return self.execute(
+            command=action_request.command,
+            client_id=action_request.client_id,
+            text=action_request.text,
+            nlu_data=action_request.nlu_data,
+        )
+
+    def no_action(self, client_id: str) -> ActionResponse:
+        """Do no action just for consistency of the format of faq file
+
+        :param client_id: client_id
+        :type client_id: str
+        :return: no_action response
+        :rtype: ActionResponse
         """
         return ActionResponse(
             action_name='no_action',
             has_action_data=False
         )
+
+    def fallout_response(self, action_request: ActionRequest):
+        """when agent.nlu() cannot extract an appropriate intent (e.g score under threshold)
+
+        :param action_request: request
+        :type action_request: ActionRequest
+        :raises NotImplementedError: [description]
+        """
+        raise NotImplementedError
+
+    def clarifying_response(self, action_request: ActionRequest):
+        """when agent is confused with the intent extracted by agent.nlu()
+
+        :param action_request: request object
+        :type action_request: ActionRequest
+        :raises NotImplementedError: [description]
+        """
+        raise NotImplementedError
 
 
 # class MasterAction(Action):

@@ -1,7 +1,7 @@
 from typing import Optional, List, Dict
 from dataclasses import dataclass
 
-from .agent_response import AgentResponse
+from friday.response.agent_response import AgentResponse
 
 
 @dataclass
@@ -9,6 +9,7 @@ class FridayServerResponse:
     """Base dataclass for any server response in friday-server"""
     client_id: Optional[str]
     time: float
+    analysis: Optional[Dict[str, dict]]#=None
 
 
 @dataclass

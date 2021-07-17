@@ -1,13 +1,13 @@
 from friday.agents.base_agent import CompositionalAgent
 from friday.common.dialog_history import DialogHistory
 
-# from assist.helpers.nlp import pipeline_utils
-# from assist.helpers.nlp.text_pipeline import TextPipeline
-# from assist.helpers.nlp.text_encoders import SentenceEncoder
-# from assist.adaptors.similarity_adaptor import SimilarityAdapter
+# from friday.helpers.nlp import pipeline_utils
+# from friday.helpers.nlp.text_pipeline import TextPipeline
+# from friday.helpers.nlp.text_encoders import SentenceEncoder
+# from friday.adaptors.similarity_adaptor import SimilarityAdapter
 
 @DeprecationWarning
-class Assist(CompositionalAgent):
+class friday(CompositionalAgent):
     def __init__(self, module_config):
         self.threshold = module_config['threshold']
         # text_pipeline

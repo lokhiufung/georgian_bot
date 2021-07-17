@@ -1,0 +1,7 @@
+server:
+  name: "nlp_qa-server"
+extractive_qa:
+  model_path: "uer/roberta-base-chinese-extractive-qa"
+  document_store_mode: "es"
+  es_index: "your-qa-index-name",
+  device: "cpu"

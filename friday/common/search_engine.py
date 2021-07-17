@@ -3,14 +3,15 @@ import json
 from elasticsearch import Elasticsearch, NotFoundError
 from annoy import AnnoyIndex
 
-# from assist.errors import GeneralAssistError
+# from friday.errors import GeneralFridayErrro
 
-
+@DeprecationWarning
 class SearchEngine(object):
     def query(self):
         pass
 
 
+@DeprecationWarning
 class ElasticSearchEngine(SearchEngine):
     def __init__(self, index_name, doc_type='_doc'):
         self.index_name = index_name
@@ -43,7 +44,7 @@ class ElasticSearchEngine(SearchEngine):
                 _source=source, search_type='dfs_query_then_fetch'
             )
         except NotFoundError:
-            raise GeneralAssistError
+            raise GeneralFridayErrro
         else:
             return found_documents
 
@@ -52,6 +53,7 @@ class ElasticSearchEngine(SearchEngine):
         return self.document_search(body)
 
 
+@DeprecationWarning
 class AnnoySearchEngine(SearchEngine):
     N_TREES = 5
     def __init__(self, dim, metric, docs, key='question_vector', ckpt=None):

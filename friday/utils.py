@@ -67,3 +67,11 @@ def json_to_docs(json_file, mode='faq'):
     if mode.lower() == 'faq':
         check_faq_schema(docs)
     return docs
+
+
+def nemo_json_to_docs(json_file):
+    docs = []
+    with open(json_file, 'r') as f:
+        for line in f:
+            docs.append(json.loads(line))
+    return docs

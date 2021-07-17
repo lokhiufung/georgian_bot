@@ -1,1 +1,1 @@
-from master_agent import MasterAgent
+from friday.agents import MasterAgent 

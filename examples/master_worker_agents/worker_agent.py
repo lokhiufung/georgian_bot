@@ -39,29 +39,41 @@ class WorkerAgent(CompositionalAgent):
         self.default_answers = cfg.default_answers
 
     @ensure_register_action
-    def get_text_response(self, text, client_id):
+    def get_text_response(self, text, client_id, is_analyze=False):
         # use faq as its core
         nlp_faq_response = self.request(
             endpoint=self.dl_endpoints['nlp_faq'],
-            json={'text': text},
+            json={'text': text, 'is_anaylze': is_analyze},
             callback=self.handle_nlp_faq_response,
         )
+        
+        if is_analyze:
+            analysis = {}
+            analysis['faq'] = nlp_faq_response.analysis
 
         if nlp_faq_response.max_score > self.threshold:
             action_response = self.action.execute(command=nlp_faq_response.answers[0]['action'], client_id=client_id)
-            return self.dialog_flow(text, nlp_faq_response, action_response=action_response)
+            agent_response = self.dialog_flow(text, nlp_faq_response, action_response=action_response)
+            if analysis:
+                agent_response.analysis = analysis
+            # return agent_response
         else:
             nlp_qa_response = self.request(
                 endpoint=self.dl_endpoints['nlp_qa'],
-                json={'text': text},
+                json={'text': text, 'is_anaylze': is_analyze},
                 callback=self.handle_nlp_qa_response,
             )
-            return self.dialog_flow(text, nlp_faq_response, nlp_qa_response=nlp_qa_response)
+            agent_response = self.dialog_flow(text, nlp_faq_response, nlp_qa_response=nlp_qa_response)
+            if is_analyze:
+                analysis['qa'] = nlp_faq_response.analysis
+                agent_response.analysis = analysis
+        return agent_response
     
     @ensure_register_action
-    def get_voice_response(self, voice_request):
+    def get_voice_response(self, voice_request, is_analyze=False):
         client_id = voice_request.get('client_id', '')
 
+        # reminder: `is_analyze` is in voice_request
         asr_response = self.request(
             endpoint=self.dl_endpoints['asr'],
             json=voice_request,
@@ -69,14 +81,25 @@ class WorkerAgent(CompositionalAgent):
         )
         agent_response = self.get_text_response(
             text=asr_response.transcription,
-            client_id=client_id
+            client_id=client_id,
+            is_anaylze=is_analyze,
         )
+        # if isinstance(agent_response, tuple):
+        #     agent_response, agent_analysis = agent_response
+        #     analysis['asr'] = asr_response.analysis
+
         tts_response = self.request(
             endpoint=self.dl_endpoints['tts'],
-            json={'text': agent_response.text_answer},
+            json={'text': agent_response.text_answer, 'is_analyze': is_analyze},
             callback=self.handle_tts_response
         )
         agent_response.voice_answer = tts_response.audio
+        if is_analyze:
+            agent_response.analysis = {
+                'tts': tts_response.analysis,
+                'asr': asr_response.analysis,
+                **agent_response.analysis,
+            }
         return agent_response
 
     def dialog_flow(self, input_text, nlp_faq_response, nlp_qa_response=None, action_response=None):

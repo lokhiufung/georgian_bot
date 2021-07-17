@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import Union, Optional, Any
 
 from dataclasses import dataclass
 
@@ -14,5 +14,5 @@ class AgentResponse:
     is_voice: Optional[bool]=False
     voice_answer: Optional[bytes]=None
     action_response: Optional[ActionResponse]=None
-    additional_answers: Optional=None
+    additional_answers: Optional[Any]=None
 

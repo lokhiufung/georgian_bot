@@ -10,6 +10,17 @@ from friday.text.text_pipeline import TextPipeline
 
 
 def drdc_extractor(drdc_dir, files: Union[str, List[str]]='all', text_pipeline: TextPipeline=None):
+    """extract docs from drdc dataset
+
+    :param drdc_dir: [description]
+    :type drdc_dir: [type]
+    :param files: [description], defaults to 'all'
+    :type files: Union[str, List[str]], optional
+    :param text_pipeline: [description], defaults to None
+    :type text_pipeline: TextPipeline, optional
+    :return: [description]
+    :rtype: [type]
+    """
     if isinstance(files, str) and files.lower() == 'all':
         json_files = list(glob.glob(os.path.join(drdc_dir, '*.json')))
     

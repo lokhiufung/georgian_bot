@@ -6,11 +6,10 @@ dl_endpoint:
   asr: ''
   tts: ''
   nlp_faq: ''
+  nlp_qa: ''
 
 worker_endpoint:
   emsd: ''
-
-state_storage: null
 
 dialog_history:
   capacity: 10

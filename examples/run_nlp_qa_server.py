@@ -14,23 +14,22 @@ from friday_server.nlp_qa import create_nlp_qa_server
 
 # args = parse_args()
 
-# cfg = OmegaConf.load(args.model_path)
-cfg = {
-    'server': {
-        'name': 'nlp_qa-server'
-    },
-    'extractive_qa': {
-        'model_path': 'deepset/roberta-base-squad2',
-        'document_store_mode': 'es',
-        'es_index': 'ai-qa',
-        'device': 'cpu'
-        # 'document_dir': '/home/{}/Desktop/test_haystack_eng'.format(os.environ['USER'])
-    }
-} 
+cfg = OmegaConf.load('./configs/nlp_qa_server_config.yaml')
+# cfg = {
+#     'server': {
+#         'name': 'nlp_qa-server'
+#     },
+#     'extractive_qa': {
+#         'model_path': 'uer/roberta-base-chinese-extractive-qa',
+#         'document_store_mode': 'es',
+#         'es_index': 'drcd_test',
+#         'device': 'cpu'
+#         # 'document_dir': '/home/{}/Desktop/test_haystack_eng'.format(os.environ['USER'])
+#     }
+# } 
 
 app = create_nlp_qa_server(DictConfig(cfg))
 
 
 if __name__ == '__main__':
     app.run()
-    

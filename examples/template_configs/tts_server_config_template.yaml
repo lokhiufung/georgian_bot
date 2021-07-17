@@ -1,0 +1,12 @@
+synthesizer:
+  text2mel_model: "/path/to/tacontron/.nemo",
+  mel2audio_model: "/path/to/waveglow/.nemo",
+  device: "cuda:0"
+server:
+  name: "tts-server"
+  lang: "cantonese"
+  constants:
+    sample_rate: 22050
+    denoiser_strength: 1.0
+    post_processing: True
+  

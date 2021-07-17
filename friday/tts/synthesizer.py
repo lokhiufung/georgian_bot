@@ -1,23 +1,112 @@
+from typing import List
+
 import torch
+import torch.nn.functional as F
+import numpy as np
 import nemo.collections.tts as nemo_tts
 
 
-class Synthesizer:
-    def __init__(self, text2mel_model, mel2audio_model, device='cpu'):
-        self.text2mel_model = nemo_tts.models.Tacotron2Model.restore_from(text2mel_model, map_location=torch.device(device))
-        self.mel2audio_model = nemo_tts.models.WaveGlowModel.restore_from(mel2audio_model, map_location=torch.device(device))
 
-    def preprocess_text(self, text):
+__all__ = ['Synthesizer']
+
+
+def slice_text(text: str, sep: str, maxlen: int=np.inf) -> List[str]:
+    """split long text to segments for faster inference using batch mode
+
+    :param text: input text
+    :type text: str
+    :param sep: separator, use it to split text into segments
+    :type sep: str
+    :param maxlen: maximum length of a segment, if longer than maxlen, the text will be further split to two segmnets, defaults to np.inf
+    :type maxlen: int, optional
+    :return: list of segments
+    :rtype: List[str]
+    """
+    segments = []
+    for segment in text.split(sep):
+        segment_len = len(segment)         
+        if segment_len >= maxlen:
+            further_split_index = (segment_len // 2)
+            segments.append(segment[:further_split_index])
+            segments.append(segment[further_split_index:])
+        else:
+            segments.append(segment)
+    return segments
+
+
+class Synthesizer:
+    def __init__(
+        self,
+        text2mel_model: str,
+        mel2audio_model: str,
+        gate_threshold: int=0.3,
+        device='cuda:0',
+        mel2audio_model_type='waveglow',
+        text2mel_model_type='tacotron2',
+    ):
+        """A wrapper for nemo tacotron2 and waveglow models. For tts.
+
+        :param text2mel_model: .nemo file path of tacotron2 model
+        :type text2mel_model: str
+        :param mel2audio_model: .nemo file path of waveglow model
+        :type mel2audio_model: str
+        :param device: 'cuda:0' or 'cpu', defaults to 'cuda:0'
+        :type device: str, optional
+        """
+        if text2mel_model_type == 'tacotron2':
+            self.text2mel_model = nemo_tts.models.Tacotron2Model.restore_from(text2mel_model, map_location=torch.device(device))
+        else:
+            raise ValueError('Only Tacotron2 is supported: {}'.fomrat(text2mel_model_type))
+
+        if mel2audio_model_type.lower() == 'waveglow':
+            self.mel2audio_model = nemo_tts.models.WaveGlowModel.restore_from(mel2audio_model, map_location=torch.device(device))
+        elif mel2audio_model_type.lower() == 'squeezewave':
+            self.mel2audio_model = nemo_tts.models.SqueezeWaveModel.restore_from(mel2audio_model, map_location=torch.device(device))
+        elif mel2audio_model.lower() == 'hifigan':
+            self.mel2audio_model = nemo_tts.models.restore_from(mel2audio_model, map_location=torch.device(device))
+        else:
+            raise ValueError('Only WaveGlow and SqueezeWave are supported: {}'.fomrat(mel2audio_model_type))
+        self.mel2audio_model_type = mel2audio_model_type.lower()
+        self.text2mel_model.decoder.gate_threshold = gate_threshold
+
+    def preprocess_text(self, text: str) -> str:
         # TODO: should be detached from flask server
         return text
 
-    def text_to_wav(self, manifest):
-        text = self.preprocess_text(manifest['text'])
+    def text_to_wav(self, text: str, break_to_segments=False, sep=',') -> np.array:
+        """syntheize audio with text. break_to_segments mode is not stable: (1) cuda out of memory error
+
+        :param text: input text
+        :type text: str
+        :return: synthesized audio
+        :rtype: np.array
+        """
+        # text = self.preprocess_text(text)
         with torch.no_grad():
-            parsed = self.text2mel_model.parse(manifest['text'])
-            melspec = self.text2mel_model.generate_spectrogram(tokens=parsed)
+            if break_to_segments:
+                segments = slice_text(text, sep=sep) 
+                tokens = []
+                for segment in segments:
+                    tokens.append(self.text2mel_model.parse(segment))
+                
+                # pad tokens
+                maxlen = max([token.size(1) for token in tokens])
+                # print(maxlen)
+                padded_tokens = []
+                for token in tokens:
+                    # print(token.size())
+                    # print('padded: ', F.pad(token, pad=(0, maxlen - token.size(1)), value=0).size())
+                    padded_tokens.append(F.pad(token, pad=(0, maxlen - token.size(1)), value=0))
+                # print(padded_tokens)
+                tokens = torch.cat(padded_tokens, dim=0)
+                print(tokens.size())
+            else:
+                tokens = self.text2mel_model.parse(text)
+            melspec = self.text2mel_model.generate_spectrogram(tokens=tokens)
+            # if self.mel2audio_model_type == 'squeezewave':
+            #     melspec.to(self.mel2audio_model.device)
             audio = self.mel2audio_model.convert_spectrogram_to_audio(spec=melspec)
-            audio = audio.to('cpu').numpy()
+            audio = audio.to('cpu').numpy().reshape((-1,))
         return audio
 
     

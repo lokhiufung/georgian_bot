@@ -1,0 +1,25 @@
+/voice_bot
+request
+{
+    "client_id": str; required,
+    "content": str; required, audio b64encoded and decoded with utf-8
+}
+/text_bot
+request
+{
+    "client_id": str; required,
+    "text": strl; required
+}
+
+response
+{
+    "input_text": str; text in request or transcription from asr
+    "is_fallout": bool; whether it is a fallout call i.e default answer,
+    "has_action": bool; whether agent has done any action,
+    "text_answer": str; text version of answer,
+    "voice_answer": str; audio response, base64encoded, only for /voice_bot, null for /text_bot
+    "action_response": not null for has_action==true, else null,
+    "addtional_answers": array[str], array of additional answers in the case of clarifying questions
+}
+
+

@@ -8,17 +8,31 @@ import random
 import librosa
 import soundfile
 
+from omegaconf import DictConfig
 from flask import Flask, abort, request
 import scipy.io.wavfile as wave
 
-from friday.asr.recognizer import Recognizer
 
 
 __all__ = ['create_asr_server']
 
 
-def create_asr_server(asr_server_cfg):
-    recognizer = Recognizer(**asr_server_cfg.recognizer)
+def create_asr_server(asr_server_cfg: DictConfig, use_transformer=False):
+    """helper function for creating a flask server for asr
+
+    :param asr_server_cfg: contain cfg for server and asr
+    :type asr_server_cfg: DictConfig
+    :return: Flask server
+    :rtype: Flask
+    """
+    if use_transformer:
+        from friday.asr.transformer_recognizer import TransformerRecognizer
+
+        recognizer = TransformerRecognizer(**asr_server_cfg.recognizer)
+    else:
+        from friday.asr.recognizer import Recognizer
+
+        recognizer = Recognizer(**asr_server_cfg.recognizer)
 
     CONSTANTS = asr_server_cfg.server.constants  # constants, nb channels, sample rate 
     app = Flask(asr_server_cfg.server.name)
@@ -27,10 +41,13 @@ def create_asr_server(asr_server_cfg):
     def transcribe_file():
         """
         """
+        request_start = time.perf_counter()
+
         payload = {}  # initialize a payload object for response
         # payload['request_id'] = get_request_id()
         body = request.get_json()
         payload['client_id'] = body.get('client_id', '')
+        is_analyze = body.get('is_analyze', False)
         # LOGGER.debug('id: {}'.format(payload['request_id']))
         # LOGGER.debug('client_id: {}'.format(payload['client_id']))
 
@@ -59,19 +76,30 @@ def create_asr_server(asr_server_cfg):
             with open(manifest_temp.name, 'w') as f:
                 json.dump(manifest, f)
 
-            start_t = time.time()
+            model_start = time.perf_counter()
             try:
                 transcription = recognizer.wav_to_text(manifests=manifest_temp.name)  # list with single transcription string
             except Exception as err:
                 abort(500, err)
-            total_t = time.time() - start_t
+            model_end = time.perf_counter()
+            model_time = model_end - model_start
 
             audio_temp.close()
             manifest_temp.close()
             
-            payload['time'] = total_t
+            payload['time'] = model_time
             payload['transcription'] = transcription[0] # wav_to_text return a list of transcriptions
-            
+
+            request_end = time.perf_counter()
+
+            if is_analyze:
+                analysis = {
+                    'latency': {
+                        'model_time': model_time,
+                        'request_time': request_end - request_start, 
+                    }
+                }
+                payload['analysis'] = analysis
             # LOGGER.debug('Successful payload: {}'.format(payload))
             return payload
         else:

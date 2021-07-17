@@ -1,0 +1,9 @@
+recognizer:
+  asr_model: "/path/to/.nemo"
+  use_lm: false
+  device: 'cpu'
+server:
+  name: 'asr-server',
+  constants:
+    sample_rate: 16000
+    nb_channels': 1

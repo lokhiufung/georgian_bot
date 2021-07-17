@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # custom
+.DS_store
 test.py
 .vscode/
 dev_utils/

@@ -1,0 +1,9 @@
+server:
+  name: "nlp_faq-server"
+  k: 5
+embedding_qa:
+  model_path: "/path/to/sentence-transformer/model"
+  document_store_mode: "es"
+  es_index: "your-index-name"
+  device: "cpu"
+  model_format: "sentence_transformers"

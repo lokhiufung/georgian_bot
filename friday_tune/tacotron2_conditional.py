@@ -22,29 +22,25 @@ from nemo.collections.common.callbacks import LogEpochTimeCallback
 # from nemo.collections.tts.models import Tacotron2Model
 from nemo.core.config import hydra_runner
 from nemo.utils.exp_manager import exp_manager
+from nemo.utils import logging
 
-from friday.tts.models import ConditionalTacotron2
+from friday.tts.tacotron2_conditional import ConditionalTacotron2
 
 yaml = YAML(typ='safe')
 
 
-@hydra_runner(config_name='tacotron2_nemo.yaml', config_path='base_config')
+@hydra_runner(config_path='base_config', config_name='tacotron2_conditional_nemo.yaml')
 def main(cfg):
-    if cfg.get('user_config', None):
-        print(f'Overriding the base yaml with: {cfg.user_config} file...')
-        with open(cfg.user_config, 'r') as f:
-            user_cfg = yaml.load(f)
-        cfg = OmegaConf.merge(cfg, user_cfg)
-
+    logging.info(f'Hydra config: {OmegaConf.to_yaml(cfg)}')
+    print(OmegaConf.to_yaml(cfg))
     trainer = pl.Trainer(**cfg.trainer)  # prepare a pyotrch lightning trianer
     exp_manager(trainer, cfg.get("exp_manager", None))  # for tensorboard logger
     
     model = ConditionalTacotron2(cfg=cfg.model, trainer=trainer)
     
-    tacotron2_ckpt_dir = cfg.get('tacotron2_ckpt_dir', None)
-    asr_ckpt_dir = cfg.get('asr_ckpt_dir', None) 
-    if tacotron2_ckpt_dir and asr_ckpt_dir:
-        print('Loading pretrained_model from: {}'.format(ckpt_dir))
+    tacotron2_ckpt_dir = cfg.get('pretrained_module_dir', None)
+    if tacotron2_ckpt_dir:
+        print('Loading pretrained_model from: {}'.format(tacotron2_ckpt_dir))
         model.encoder.load_state_dict(torch.load(
             os.path.join(tacotron2_ckpt_dir, 'encoder.ckpt')
         ))
@@ -55,16 +51,22 @@ def main(cfg):
             os.path.join(tacotron2_ckpt_dir, 'postnet.ckpt')
         ))
         # load weights of speaker encoder
-        model.spk_encoder.encoder.load_state_dict(torch.load(
-            os.path.join(asr_ckpt_dir, 'encoder.ckpt')
-        ))
-        model.spk_encoder.decoder.load_state_dict(torch.load(
-            os.path.join(asr_ckpt_dir, 'decoder.ckpt')
-        ))
-        model.spk_encoder.preprocessor.load_state_dict(torch.load(
-            os.path.join(asr_ckpt_dir, 'preprocessor.ckpt')
-        ))
-        print('Successfully loaded pretrained_model from: {}'.format(ckpt_dir))
+        # model.spk_encoder.encoder.load_state_dict(torch.load(
+        #     os.path.join(asr_ckpt_dir, 'encoder.ckpt')
+        # ))
+        # model.spk_encoder.decoder.load_state_dict(torch.load(
+        #     os.path.join(asr_ckpt_dir, 'decoder.ckpt')
+        # ))
+        # model.spk_encoder.preprocessor.load_state_dict(torch.load(
+        #     os.path.join(asr_ckpt_dir, 'preprocessor.ckpt')
+        # ))
+        print('Successfully loaded pretrained_model from: {}'.format(tacotron2_ckpt_dir))
+
+    if cfg.get('freeze', None):
+        # freeze encoder, decoder, postnet
+        model.encoder.freeze()
+        model.decoder.freeze()
+        model.postnet.freeze()
 
     lr_logger = pl.callbacks.LearningRateMonitor()
     epoch_time_logger = LogEpochTimeCallback()

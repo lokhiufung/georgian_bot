@@ -1,3 +1,5 @@
+from typing import List
+
 from haystack.reader.farm import FARMReader
 
 
@@ -13,6 +15,25 @@ class ExtractiveQA:
         es_index: str='document',
         es_host: str='localhost'
     ):
+        """Model wrapper for answering QA questions using extractive method
+
+        :param model_path: model path of pretrained file/ model card name of huggingface model
+        :type model_path: str
+        :param document_store_mode: document store mode, can be either 'es' or 'in_memory', defaults to 'es'
+        :type document_store_mode: str, optional
+        :param document_dir: directory of documents to be extracted, only needed if document_store_mode=='in_memory', defaults to None
+        :type document_dir: str, optional
+        :param top_k_retriever: number of retrievers, defaults to 10
+        :type top_k_retriever: int, optional
+        :param top_k_reader: number of readers, defaults to 5
+        :type top_k_reader: int, optional
+        :param device: device, 'cuda:0' or 'cpu', defaults to 'cpu'
+        :type device: str, optional
+        :param es_index: index name in elasticsearch, defaults to 'document'
+        :type es_index: str, optional
+        :param es_host: host of elasticsearch, defaults to 'localhost'
+        :type es_host: str, optional
+        """
         from haystack.pipeline import ExtractiveQAPipeline
         
         self.device = device
@@ -40,7 +61,16 @@ class ExtractiveQA:
         self.reader = FARMReader(model_name_or_path=model_path, use_gpu=use_gpu)
         self.pipe = ExtractiveQAPipeline(self.reader, self.retriever)
     
-    def retrieve_top_k(self, text, k=1):
+    def retrieve_top_k(self, text: str, k: int=1) -> List[dict]:
+        """retrieve top k results from document store
+
+        :param text: input question
+        :type text: str
+        :param k: top k results, defaults to 1
+        :type k: int, optional
+        :return: list of documents retrieved
+        :rtype: List[dict]
+        """
         prediction = self.pipe.run(
             query=text,
             top_k_retriever=self.top_k_retriever,
@@ -60,9 +90,11 @@ class ExtractiveQA:
             answers.append(answer)     
         return answers
     
-    def _load_documents(self, document_dir):
-        """
-        load documents only for InMemory mode
+    def _load_documents(self, document_dir: str):
+        """load documents only for InMemory mode
+
+        :param document_dir: directory of documents to be extracted 
+        :type document_dir: str
         """
         from haystack.preprocessor.utils import convert_files_to_dicts
         from haystack.preprocessor.preprocessor import PreProcessor
@@ -84,7 +116,7 @@ class ExtractiveQA:
 class EmbeddingQA:
     def __init__(
         self,
-        model_path,
+        model_path: str,
         document_store_mode: str='es',
         top_k_retriever: int=10,
         device: str='cpu',
@@ -95,9 +127,30 @@ class EmbeddingQA:
         similarity: str='cosine',
         model_format: str='farm'
     ):
-        """
-        A virtual assistant with question and answering type as backend of natural language understanding and inference.
-        Use Haystack as nlu backend 
+        """Model wrapper for answering QA questions using FAQ method
+     
+
+        :param model_path: model path of pretrained file/ model card name of huggingface model
+        :type model_path: str
+        :param document_store_mode: document store mode, can be either 'es' or 'in_memory', defaults to 'es'
+        :type document_store_mode: str, optional
+        :param top_k_retriever: number of retrievers, defaults to 10
+        :type top_k_retriever: int, optional
+        :param device: device, 'cuda:0' or 'cpu', defaults to 'cpu'
+        :type device: str, optional
+        :param es_index: index name in elasticsearch, defaults to 'str'
+        :type es_index: str, optional
+        :param es_host: host of elasticsearch, defaults to 'localhost'
+        :type es_host: str, optional
+        :param embedding_dim: dimension of embedding vector, defaults to 768
+        :type embedding_dim: int, optional
+        :param embedding_field: field name of embedding vector, defaults to 'question_emb'
+        :type embedding_field: str, optional
+        :param similarity: similarity metric, defaults to 'cosine'
+        :type similarity: str, optional
+        :param model_format: 'farm' or 'sentence_transformers', defaults to 'farm'
+        :type model_format: str, optional
+        :raises ValueError: decument_store error
         """
         from haystack.pipeline import FAQPipeline
         
@@ -132,7 +185,16 @@ class EmbeddingQA:
         
         self.top_k_retriever = top_k_retriever
     
-    def retrieve_top_k(self, text, k=1):
+    def retrieve_top_k(self, text: str, k: int=1) -> List[dict]:
+        """retrieve top k results from document store
+
+        :param text: input question
+        :type text: str
+        :param k: top k results, defaults to 1
+        :type k: int, optional
+        :return: list of documents retrieved
+        :rtype: List[dict]
+        """
         prediction = self.pipe.run(
             query=text,
             top_k_retriever=self.top_k_retriever,

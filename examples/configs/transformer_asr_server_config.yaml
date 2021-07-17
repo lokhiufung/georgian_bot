@@ -1,0 +1,9 @@
+recognizer:
+  transformer_model: "/home/lokhiufung/pretrained_model/wave2vec2-xlsr_transformer_common-voice_2020-05-10/checkpoint-23600"
+  # use_lm: false
+  device: 'cpu'
+server:
+  name: 'asr-server'
+  constants:
+    sample_rate: 16000
+    nb_channels: 1

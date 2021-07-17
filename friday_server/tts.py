@@ -8,6 +8,7 @@ import random
 import string
 import os
 
+from omegaconf import DictConfig
 from flask import Flask, request, abort, jsonify
 from scipy.io.wavfile import write
 
@@ -30,7 +31,15 @@ def extract_segnment(sample, i=0, top_db=60, frame_length=2048, hop_length=512):
 #########################
 
     
-def create_tts_server(tts_server_cfg):
+def create_tts_server(tts_server_cfg: DictConfig):
+    """helper function for creating a flask server for tts
+
+    :param tts_server_cfg: contain cfg for server and tts
+    :type tts_server_cfg: DictConfig
+    :raises ValueError: Supported languages: "cantonese", "english"
+    :return: Flask server
+    :rtype: Flask
+    """
     server_cfg = tts_server_cfg.server
     
     app = Flask(server_cfg.name)
@@ -52,35 +61,47 @@ def create_tts_server(tts_server_cfg):
     
     @app.route('/synthesize', methods=['POST'])
     def synthesize():
+        request_start = time.perf_counter()  # start getting result of request
+
         payload = dict() 
         data = request.get_json()
         # LOGGER.debug('receiced data: {}'.format(data))
         text = data.get('text', '')
         payload['client_id'] = data.get('client_id', '')
+        is_analyze = data.get('is_analyze', False)  # get more info for inference analysis
+
         denoiser_strength = data.get('denoiser_strength', CONSTANTS["denoiser_strength"])
+        
+        experimental = data.get('experimental', {})
+        break_to_segments = experimental.get('break_to_segments', False)
+        print('break_to_segments: {}'.format(break_to_segments))
         if text:
+            text_pipeline_start = time.perf_counter()
             text = text_pipeline(text)
+            text_pipeline_end = time.perf_counter()
+
             audio_temp = './audio_temp-{}-{}.wav'.format(str(time.time()).replace('.', ''), _random_string())
             # initialize temp file for audio and manifest
-            manifest_temp = tempfile.NamedTemporaryFile(suffix='.json')
+            # manifest_temp = tempfile.NamedTemporaryFile(suffix='.json')
 
-            manifest = dict()
-            manifest['audio_filepath'] = audio_temp
-            manifest['duration'] = 1.0
-            manifest['text'] = text
+            # manifest = dict()
+            # manifest['audio_filepath'] = audio_temp
+            # manifest['duration'] = 1.0
+            # manifest['text'] = text
 
-            with open(manifest_temp.name, 'w') as f:
-                json.dump(manifest, f)
-            start = time.perf_counter()
-            sample = tts_model.text_to_wav(manifest=manifest)[0]  # scipy.io.wav write needs a 1-d array 
+            # with open(manifest_temp.name, 'w') as f:
+            #     json.dump(manifest, f)
+            model_start = time.perf_counter()
+            sample = tts_model.text_to_wav(text=text, break_to_segments=break_to_segments)  # scipy.io.wav write needs a 1-d array 
             # librosa: trim silence/ get the first split
             if CONSTANTS['post_processing']:
                 sample = trim_silence(sample)
                 sample = extract_segnment(sample)
-            total_t = time.perf_counter() - start
+            model_end = time.perf_counter()
+            model_time = model_end - model_start
             # LOGGER.debug('Successful time: {} manifest: {}'.format(total_t, manifest))
 
-            manifest_temp.close()  # close and remove manifest_temp
+            # manifest_temp.close()  # close and remove manifest_temp
             write(audio_temp, CONSTANTS.sample_rate, sample)
 
             # format payload
@@ -90,11 +111,21 @@ def create_tts_server(tts_server_cfg):
 
             # payload = dict()
             payload['audio'] = base64.b64encode(data).decode('utf-8')
-            payload['time'] = total_t
+            payload['time'] = model_time
+            
+            request_end = time.perf_counter()
+            if is_analyze:
+                analysis = {
+                    'latency': {
+                        'model_time': model_time,
+                        'request_time': request_end - request_start,
+                        'text_pipeline_time': text_pipeline_end - text_pipeline_start,
+                    }
+                }
+                payload['analysis'] = analysis 
             return jsonify(payload)
         else:
             abort(400, 'text cannot be empty')
-
     return app
 
 

@@ -1,0 +1,10 @@
+recognizer:
+  asr_model: "/home/lokhiufung/pretrained_model/recorderdata_bpe-test.nemo"
+  model_type: 'ctc_hbpe'
+  use_lm: false
+  device: 'cpu'
+server:
+  name: 'asr-server'
+  constants:
+    sample_rate: 16000
+    nb_channels: 1
