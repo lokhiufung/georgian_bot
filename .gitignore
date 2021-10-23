@@ -136,3 +136,5 @@ dev_utils/
 .hydra/
 mlruns/
 pretrained_models/
+.devcontainer
+seeder

@@ -1,25 +1,39 @@
-"""
-Deprecated
-"""
-
-from friday.task import Task
+from abc import ABC, abstractmethod
 
 
-@DeprecationWarning
-class BaseAgent(object):
-    """Base class of all agents"""
-    def register_task(self, task: Task):
-        raise NotImplementedError
-
-
-@DeprecationWarning
-class CompositionalAgent(BaseAgent):
-    """Abstract class of all compositional agents, which can be broken down into separate functional components"""
+class CompositionalAgent(ABC):
     
-    def dialog_flow(self):
-        """define the dialogflow in this method"""
+    def __init__(self, fulfillment_router, sensors):
+        self.fulfillment_router = fulfillment_router
+        # self.fulfillment_adaptor = fulfillment_adaptor
+        # self.dialog_adaptor = dialog_adaptor 
+        self.sensors = sensors
+    
+    @abstractmethod
+    def fulfillment_adaptor(self, sensor_output):
+        raise NotImplementedError 
+    
+    @abstractmethod
+    def dialog_adaptor(self, sensor_output, fulfillment, confidence):
         raise NotImplementedError
 
-    def text_infer(self):
-        """define the """
-        raise NotImplementedError
+    @classmethod
+    def from_json(self, filepath: dict):
+        # import json
+
+        # with open(filepath, 'r') as f:
+        #     config = json.load(f)
+        raise NotImplementedError  
+ 
+    def act(self, obs, fulfillment_key=None):
+        
+        # embedding = send_embedding_server(text)
+        sensor_output = {sensor.type_: sensor.process(obs[sensor.type_]) for sensor in self.sensors}
+        
+        if fulfillment_key is None:
+            fulfillment_key, fulfillment_kwargs = self.fulfilment_adapter(sensor_output)
+        
+        fulfillment, confidence = self.fulfillment_router[fulfillment_key](**fulfillment_kwargs)
+        text = self.dialog_adapter(sensor_output, fulfillment, confidence)
+
+        return text, fulfillment
