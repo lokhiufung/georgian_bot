@@ -1,4 +1,4 @@
-import sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer
 
 from friday.sensors.base_sensor import APICallingSensor, BaseSensor
 from friday.constants import SensorType
@@ -12,6 +12,7 @@ class RequestTextEmbeddingSensor(APICallingSensor):
         super().__init__()
         self.embedding_endpoint = embedding_endpoint
 
+    @property
     def type_(self):
         return SensorType.TEXT
 
@@ -30,11 +31,12 @@ class TextEmbeddingSensor(BaseSensor):
     def __init__(self, model_name='distiluse-base-multilingual-cased'):
         self.model = SentenceTransformer(model_name)
 
+    @property
     def type_(self):
         return SensorType.TEXT
 
     def process(self, text):
         return {
-            'embedding': self.model.encode([text])
+            'embedding': self.model.encode([text])[0].tolist()
         }
 

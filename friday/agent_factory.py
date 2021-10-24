@@ -17,9 +17,9 @@ def load_example_agent(docs_filepath):
 
     fulfillment_router = HardFulfillmentRouter(
             keys=(0, 1),
-            fulfillment_engines=(
-                FAQFulfillmentEngine()
-            )
+            fulfillment_engines=[
+                FAQFulfillmentEngine(docs),
+            ]
         )
     
     agent = ExampleAgent(fulfillment_router, sensors=[text_embedding_sensor], confidence_threshold=0.5)

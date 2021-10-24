@@ -31,9 +31,9 @@ class CompositionalAgent(ABC):
         sensor_output = {sensor.type_: sensor.process(obs[sensor.type_]) for sensor in self.sensors}
         
         if fulfillment_key is None:
-            fulfillment_key, fulfillment_kwargs = self.fulfilment_adapter(sensor_output)
+            fulfillment_key, fulfillment_args = self.fulfillment_adaptor(sensor_output)
         
-        fulfillment, confidence = self.fulfillment_router[fulfillment_key](**fulfillment_kwargs)
-        text = self.dialog_adapter(sensor_output, fulfillment, confidence)
+        fulfillment, confidence = self.fulfillment_router.route(fulfillment_key, fulfillment_args)
+        dialog = self.dialog_adaptor(sensor_output, fulfillment, confidence)
 
-        return text, fulfillment
+        return dialog, fulfillment

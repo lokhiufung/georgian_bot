@@ -138,3 +138,4 @@ mlruns/
 pretrained_models/
 .devcontainer
 seeder
+*example.json

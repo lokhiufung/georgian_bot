@@ -1,5 +1,6 @@
 # friday
-friday is friday...
+
+Everyone love friday! Friday is a set of toolkit to build virtual assistants and serve it as a service for different frontier platforms like, Telegram, Instagram, Facebook messager. The ultimate aim is to build an agent that can understand human instructions and learn interactivly. That's the virtual assistant friday from Tony Stark!  
 
 
 # Setup environment
