@@ -1,4 +1,23 @@
-def load_example_agent(docs_filepath):
+# factory methods for producing agents
+
+
+def load_example_agent(docs_filepath: str):
+    """Factory method for producing an example agent
+
+    Example agent is a faq-based agent, which an agent interpret text input by an sentence encoder. A hard router (hard-coded keys) is used for routing to fulfillment engine. A fulfillemnt engine then performs similarity search to find the contextually closest question and return to the agentl.     
+    A json file with the following format should be prepared:
+    [
+        {"question": "What is your name?", "answer": "My name is Friday"},
+        {"question": "What do you do?", "answer": "I am an virtual assistant."},
+        ...
+    ]
+
+    :param docs_filepath: [description]
+    :type docs_filepath: str
+    :return: [description]
+    :rtype: [type]
+    """
+
     import json
 
     from friday.agents.example_agent import ExampleAgent

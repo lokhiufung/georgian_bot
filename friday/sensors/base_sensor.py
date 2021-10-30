@@ -4,7 +4,10 @@ import requests
 
 
 class BaseSensor(ABC):
-    """"""
+    """Base class of `Sensor`
+
+    A `Sensor` is the primary data processing layer of an agent. Different sensors process different types of inputs. Outputs from different sensors can be integrated. 
+    """
     @abstractproperty
     def type_(self):
         raise NotImplementedError
