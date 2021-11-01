@@ -11,6 +11,7 @@ xlrd
 tqdm
 annoy
 requests
+pydub
 
 # dev
 Sphinx

@@ -15,7 +15,15 @@ class ExampleAgent(CompositionalAgent):
         }
 
     def fulfillment_adaptor(self, sensor_output):
-        return (0, sensor_output[SensorType.TEXT]['embedding'])  # `0` means always choose the first one
+        # TODO: re-implementation needed
+        if SensorType.TEXT in sensor_output:
+            return (0, sensor_output[SensorType.TEXT]['embedding'])  # `0` means always choose the first one
+        elif SensorType.AUDIO in sensor_output:
+            transcription = sensor_output[SensorType.AUDIO]['transcription'] 
+            result = self.sensors[SensorType.TEXT].process(transcription)
+            return(0, result['embedding'])
+        else:
+            raise Exception
 
     def dialog_adaptor(self, sensor_output, fulfillment, confidence):
         if confidence > self.confidence_threshold: 

@@ -24,9 +24,10 @@ def load_example_agent(docs_filepath: str):
     from friday.fulfillments.engines.faq_fulfillement_engine import FAQFulfillmentEngine
     from friday.fulfillments.routers.hard_router import HardFulfillmentRouter
     from friday.sensors.text_sensor import TextEmbeddingSensor
-
+    from friday.sensors.audio_sensor import AudioSensor
 
     text_embedding_sensor = TextEmbeddingSensor()
+    audio_sensor = AudioSensor() 
 
     with open(docs_filepath, 'r') as f:
         docs = json.load(f)  # docs
@@ -41,6 +42,6 @@ def load_example_agent(docs_filepath: str):
             ]
         )
     
-    agent = ExampleAgent(fulfillment_router, sensors=[text_embedding_sensor], confidence_threshold=0.5)
+    agent = ExampleAgent(fulfillment_router, sensors={'text': text_embedding_sensor, 'audio': audio_sensor}, confidence_threshold=0.5)
 
     return agent

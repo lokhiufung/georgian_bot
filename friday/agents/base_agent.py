@@ -2,6 +2,8 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Union
 
+import numpy as np
+
 from friday.fulfillments.routers.base_router import BaseFulfillmentRouter
 from friday.sensors.base_sensor import BaseSensor
 from friday.data_classes import Fulfillment
@@ -13,7 +15,7 @@ class BaseAgent(ABC):
 
 class CompositionalAgent(BaseAgent):
     
-    def __init__(self, fulfillment_router: BaseFulfillmentRouter, sensors: BaseSensor):
+    def __init__(self, fulfillment_router: BaseFulfillmentRouter, sensors: Dict[str, BaseSensor]):
         """Base class of compositional agent
 
         A Compositional agent is composed of different operating units. It breaks a agent into different units, like sensors, dialog-making, fulfillment router.  
@@ -29,11 +31,11 @@ class CompositionalAgent(BaseAgent):
         self.sensors = sensors
     
     @abstractmethod
-    def fulfillment_adaptor(self, sensor_output: Dict[dict]):
+    def fulfillment_adaptor(self, sensor_output: Dict[Union[str, int, np.ndarray], dict]):
         raise NotImplementedError 
     
     @abstractmethod
-    def dialog_adaptor(self, sensor_output: Dict[dict], fulfillment: Fulfillment, confidence: float):
+    def dialog_adaptor(self, sensor_output: dict, fulfillment: Fulfillment, confidence: float):
         raise NotImplementedError
 
     # @classmethod
@@ -47,7 +49,7 @@ class CompositionalAgent(BaseAgent):
     def act(self, obs: dict, fulfillment_key: Union[int, str]=None):
         
         # embedding = send_embedding_server(text)
-        sensor_output = {sensor.type_: sensor.process(obs[sensor.type_]) for sensor in self.sensors}
+        sensor_output = {type_: sensor.process(obs[type_]) for type_, sensor in self.sensors.items() if type_ in obs}
         
         if fulfillment_key is None:
             fulfillment_key, fulfillment_args = self.fulfillment_adaptor(sensor_output)
