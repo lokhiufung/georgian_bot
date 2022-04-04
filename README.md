@@ -1,11 +1,11 @@
-# Friday
+# georgian_bot
 
-Everyone love friday! Friday is a set of toolkit to build virtual assistants and serve it as a service for different frontier platforms like, Telegram, Instagram, Facebook messager. The ultimate aim is to build an agent that can understand human instructions and learn interactivly. That's the virtual assistant friday from Tony Stark!  
+Everyone love georgian_bot! georgian_bot is a set of toolkit to build virtual assistants and serve it as a service for different frontier platforms like, Telegram, Instagram, Facebook messager. The ultimate aim is to build an agent that can understand human instructions and learn interactivly. That's the virtual assistant georgian_bot from Tony Stark!  
 
-## What is Friday?
-Friday is a toolkit for building general purpose agents for usages in real-life. Agents built with friday toolkit is a genral interface for people to interact and do tasks for them.
+## What is georgian_bot?
+georgian_bot is a toolkit for building general purpose agents for usages in real-life. Agents built with georgian_bot toolkit is a genral interface for people to interact and do tasks for them.
 
-![friday-0.2](https://docs.google.com/drawings/d/e/2PACX-1vS14nIMK2nwRGrfj6rKtdcPPAO2Xto7chhuOlVXVdC7GGBxl_oD1dGkKTK-4QNNLR7hlKdnOICmsjqM/pub?w=960&h=720)
+![georgian_bot-0.2](https://docs.google.com/drawings/d/e/2PACX-1vS14nIMK2nwRGrfj6rKtdcPPAO2Xto7chhuOlVXVdC7GGBxl_oD1dGkKTK-4QNNLR7hlKdnOICmsjqM/pub?w=960&h=720)
 
 ## Compositional agent
 A Compositional agent is composed of different operating units. It breaks a agent into different units, like sensors, dialog_adaptor, fulfillment router, fulfillment adaptor.
